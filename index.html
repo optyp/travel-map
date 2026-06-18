@@ -1,0 +1,1517 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f0e8">
+  <title>My World Map</title>
+  <script>
+    document.documentElement.dataset.theme = localStorage.getItem('travel-atlas-theme') || 'light';
+  </script>
+  <script src="./d3.min.js"></script>
+  <style>
+    :root {
+      --ink: #17221f;
+      --muted: #68726e;
+      --paper: #f3f0e8;
+      --panel: rgba(255, 255, 255, .82);
+      --line: rgba(23, 34, 31, .12);
+      --land: #ddd9cf;
+      --land-hover: #ced1c8;
+      --sea: #bfd7da;
+      --map-area: #dce6e3;
+      --country-border: #a8b2ac;
+      --country-hover-border: #4f7068;
+      --accent: #ef6a4c;
+      --accent-deep: #c74b32;
+      --visited: #2f9385;
+      --visited-hover: #1c675d;
+      --visited-2: #288579;
+      --visited-3: #21776e;
+      --visited-5: #17655f;
+      --visited-10: #0d504b;
+      --visited-20: #073f3b;
+      --home: #d7833f;
+      --home-hover: #b96b2e;
+      --unvisited-dot: #cfd5d0;
+      --shadow: 0 20px 55px rgba(31, 50, 44, .13);
+      --radius: 24px;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --ink: #f0f2f5;
+      --muted: #9fa7b2;
+      --paper: #111318;
+      --panel: rgba(25, 28, 35, .95);
+      --line: rgba(232, 236, 243, .12);
+      --land: #363c47;
+      --land-hover: #454d5b;
+      --sea: #202b37;
+      --map-area: #161a21;
+      --country-border: #626d7b;
+      --country-hover-border: #aeb9c7;
+      --accent: #f07859;
+      --accent-deep: #d65f43;
+      --visited: #50b9b9;
+      --visited-hover: #59b9bd;
+      --visited-2: #43a9b2;
+      --visited-3: #3699aa;
+      --visited-5: #28869d;
+      --visited-10: #226d89;
+      --visited-20: #1c5876;
+      --home: #df9752;
+      --home-hover: #efaa67;
+      --unvisited-dot: #59616d;
+      --shadow: 0 22px 60px rgba(0, 0, 0, .34);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input, textarea { font: inherit; }
+    button { color: inherit; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      height: 100%;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    .sidebar, .map-shell {
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 28px 24px 20px;
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+    }
+
+    .brand-row { display: flex; align-items: center; gap: 12px; }
+    .mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--accent);
+      box-shadow: 0 8px 18px rgba(239,106,76,.25);
+      font-size: 19px;
+    }
+    .mark svg { width: 20px; height: 20px; }
+    .theme-toggle {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      margin-left: auto;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      background: rgba(255,255,255,.52);
+      cursor: pointer;
+    }
+    .theme-toggle:hover, .theme-toggle:focus-visible { color: var(--ink); background: rgba(255,255,255,.85); outline: none; }
+    .theme-toggle svg { width: 18px; height: 18px; }
+    .theme-icon-sun { display: none; }
+    html[data-theme="dark"] .theme-icon-moon { display: none; }
+    html[data-theme="dark"] .theme-icon-sun { display: block; }
+    .eyebrow { margin: 0 0 2px; color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 25px; line-height: 1; font-weight: 600; }
+
+    .intro { margin: 22px 0 20px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+    .stat {
+      min-width: 0;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(255,255,255,.62);
+    }
+    .stat strong { display: block; font-family: Georgia, serif; font-size: 30px; font-weight: 500; line-height: 1; }
+    .stat span { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+    .travel-progress { margin: -7px 1px 17px; }
+    .progress-copy { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; color: var(--muted); font-size: 10px; }
+    .progress-copy strong { color: var(--visited); font-size: 10px; }
+    .progress-track { height: 5px; overflow: hidden; border-radius: 999px; background: rgba(23,34,31,.08); }
+    .progress-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--visited), #48a397); transition: width .45s ease; }
+
+    .home-section { position: relative; margin: -2px 0 14px; }
+    .home-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.62);
+      text-align: left;
+      cursor: pointer;
+    }
+    .home-button:hover, .home-button:focus-visible { border-color: rgba(215,131,63,.45); background: white; outline: none; }
+    .home-icon { display: grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; border-radius: 10px; color: white; background: var(--home); font-size: 15px; }
+    .home-copy { min-width: 0; flex: 1; }
+    .home-copy small { display: block; margin-bottom: 2px; color: var(--muted); font-size: 10px; font-weight: 720; text-transform: uppercase; letter-spacing: .06em; }
+    .home-copy strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .home-change { color: var(--home-hover); font-size: 11px; }
+    .home-picker { margin-top: 7px; padding: 9px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.94); box-shadow: 0 12px 30px rgba(31,50,44,.12); }
+    .home-picker[hidden] { display: none; }
+    .home-search { width: 100%; height: 38px; padding: 0 11px; border: 1px solid var(--line); border-radius: 10px; background: white; outline: none; font-size: 12px; }
+    .home-search:focus { border-color: var(--home); box-shadow: 0 0 0 3px rgba(215,131,63,.11); }
+    .home-options { max-height: 156px; margin-top: 6px; overflow: auto; scrollbar-width: thin; }
+    .home-option { width: 100%; display: flex; align-items: center; gap: 9px; padding: 8px; border: 0; border-radius: 9px; background: transparent; text-align: left; font-size: 12px; cursor: pointer; }
+    .home-option:hover, .home-option:focus-visible { background: rgba(215,131,63,.1); outline: none; }
+    .home-option-dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: var(--home); }
+    .home-picker-footer { display: flex; justify-content: flex-end; padding: 6px 3px 0; border-top: 1px solid var(--line); }
+    .home-remove { border: 0; color: var(--muted); background: none; font-size: 10px; cursor: pointer; }
+    .home-remove:hover { color: var(--accent-deep); }
+
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; left: 13px; top: 50%; width: 17px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .search {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px 0 39px;
+      color: var(--ink);
+      background: rgba(255,255,255,.72);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      outline: none;
+    }
+    .search:focus { border-color: var(--visited); box-shadow: 0 0 0 3px rgba(38,124,112,.12); }
+
+    .list-title { display: flex; justify-content: space-between; align-items: center; margin: 19px 2px 10px; }
+    .list-title h2 { margin: 0; font-size: 13px; letter-spacing: .03em; }
+    .text-button { padding: 4px 0; border: 0; color: var(--visited); background: none; font-size: 12px; cursor: pointer; }
+    .text-button:hover { color: var(--visited-hover); }
+    .list-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: -2px 0 8px; }
+    .list-tool {
+      min-width: 0;
+      height: 32px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      color: var(--muted);
+      background: rgba(255,255,255,.5);
+      font-size: 10px;
+      outline: none;
+      cursor: pointer;
+    }
+    .list-tool:hover, .list-tool:focus-visible { color: var(--ink); border-color: rgba(38,124,112,.35); }
+    .list-tool option { color: var(--ink); background: white; }
+    .country-list { min-height: 0; flex: 1; overflow: auto; margin: 0 -8px; padding: 0 8px 8px; scrollbar-width: thin; }
+    .empty-list { padding: 28px 10px; color: var(--muted); text-align: center; font-size: 13px; line-height: 1.5; }
+    .country-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      border-radius: 12px;
+      background: transparent;
+    }
+    .country-item:hover, .country-item:focus-within { background: rgba(38,124,112,.08); outline: none; }
+    .country-focus { min-width: 0; display: flex; flex: 1; align-items: center; gap: 11px; padding: 7px 6px; border: 0; border-radius: 9px; background: transparent; text-align: left; cursor: pointer; }
+    .country-focus:focus-visible, .country-open:focus-visible { outline: 2px solid var(--visited); outline-offset: -1px; }
+    .country-open { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border: 0; border-radius: 9px; color: var(--muted); background: transparent; font-size: 18px; cursor: pointer; }
+    .country-open:hover { color: white; background: var(--visited); }
+    .country-dot { width: 9px; height: 9px; flex: 0 0 auto; border-radius: 50%; background: var(--visited); }
+    .country-dot.level-2 { background: var(--visited-2); }
+    .country-dot.level-3 { background: var(--visited-3); }
+    .country-dot.level-5 { background: var(--visited-5); }
+    .country-dot.level-10 { background: var(--visited-10); }
+    .country-dot.level-20 { background: var(--visited-20); box-shadow: 0 0 0 3px rgba(38,124,112,.14); }
+    .country-copy { min-width: 0; flex: 1; }
+    .country-name { display: block; overflow: hidden; font-size: 13px; font-weight: 680; text-overflow: ellipsis; white-space: nowrap; }
+    .country-date { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .chevron { color: #9aa39f; font-size: 18px; }
+
+    .sidebar-footer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .soft-button {
+      min-width: 0;
+      padding: 9px 5px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,255,255,.6);
+      font-size: 10px;
+      cursor: pointer;
+    }
+    .soft-button:hover { background: white; }
+
+    .map-shell { position: relative; min-width: 0; overflow: hidden; border-color: rgba(23,34,31,.13); background: var(--map-area); isolation: isolate; }
+    .map-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: .28;
+      background-image: radial-gradient(rgba(23,34,31,.2) .7px, transparent .7px);
+      background-size: 16px 16px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+    }
+    #map { width: 100%; height: 100%; display: block; touch-action: none; }
+    .sphere { fill: var(--sea); stroke: rgba(23,34,31,.15); stroke-width: .8; }
+    .country {
+      fill: var(--land);
+      stroke: var(--country-border);
+      stroke-width: .7;
+      vector-effect: non-scaling-stroke;
+      cursor: pointer;
+      transition: fill .15s ease;
+      outline: none;
+    }
+    .country:hover, .country:focus-visible { fill: var(--land-hover); stroke: var(--country-hover-border); stroke-width: 1.4; }
+    .country.visited { fill: var(--visited); }
+    .country.visited:hover, .country.visited:focus-visible { fill: var(--visited-hover); }
+    .country.visit-level-2 { fill: var(--visited-2); }
+    .country.visit-level-3 { fill: var(--visited-3); }
+    .country.visit-level-5 { fill: var(--visited-5); }
+    .country.visit-level-10 { fill: var(--visited-10); }
+    .country.visit-level-20 { fill: var(--visited-20); }
+    .country.home { fill: var(--home); }
+    .country.home:hover, .country.home:focus-visible { fill: var(--home-hover); }
+    .country.selected { stroke: var(--accent); stroke-width: 2.2; }
+
+    .place-marker { cursor: pointer; outline: none; transition: opacity .18s ease; }
+    .place-marker.marker-hidden { opacity: 0; pointer-events: none; }
+    .place-marker .marker-hit { fill: transparent; pointer-events: all; }
+    .place-marker .marker-ring { fill: rgba(255,255,255,.92); stroke: rgba(23,34,31,.28); stroke-width: 1; vector-effect: non-scaling-stroke; pointer-events: none; }
+    .place-marker:hover .marker-ring, .place-marker:focus-visible .marker-ring { stroke: var(--accent); stroke-width: 1.5; }
+    .place-marker.visited .marker-ring { fill: var(--visited); stroke: white; stroke-width: 1.4; r: 4.2px; filter: drop-shadow(0 1px 2px rgba(23,34,31,.25)); }
+    .place-marker.visited:hover .marker-ring, .place-marker.visited:focus-visible .marker-ring { fill: var(--visited-hover); }
+    .place-marker.visit-level-2 .marker-ring { fill: var(--visited-2); }
+    .place-marker.visit-level-3 .marker-ring { fill: var(--visited-3); }
+    .place-marker.visit-level-5 .marker-ring { fill: var(--visited-5); }
+    .place-marker.visit-level-10 .marker-ring { fill: var(--visited-10); }
+    .place-marker.visit-level-20 .marker-ring { fill: var(--visited-20); }
+    .place-marker.home .marker-ring { fill: var(--home); stroke: white; stroke-width: 1.4; r: 4.2px; filter: drop-shadow(0 1px 2px rgba(23,34,31,.25)); }
+    .place-marker.home:hover .marker-ring, .place-marker.home:focus-visible .marker-ring { fill: var(--home-hover); }
+    .place-marker.selected .marker-ring { stroke: var(--accent); stroke-width: 2; }
+
+    .map-header {
+      position: absolute;
+      top: 22px;
+      left: 24px;
+      right: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      pointer-events: none;
+    }
+    .map-title { padding: 11px 14px; border: 1px solid rgba(255,255,255,.65); border-radius: 14px; background: rgba(255,255,255,.72); backdrop-filter: blur(14px); }
+    .map-title strong { display: block; font-family: Georgia, serif; font-size: 18px; font-weight: 500; }
+    .map-title span { color: var(--muted); font-size: 11px; }
+    .legend { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 999px; background: rgba(255,255,255,.72); color: var(--muted); font-size: 11px; backdrop-filter: blur(14px); }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--visited); }
+    .legend-dot.home { background: var(--home); }
+    .legend-divider { width: 1px; height: 14px; background: var(--line); }
+    .intensity-scale { display: flex; align-items: center; gap: 3px; }
+    .intensity-scale small { margin-right: 2px; font-size: 9px; }
+    .intensity-step { width: 8px; height: 8px; border-radius: 2px; background: var(--visited); }
+    .intensity-step:nth-of-type(2) { background: var(--visited-2); }
+    .intensity-step:nth-of-type(3) { background: var(--visited-3); }
+    .intensity-step:nth-of-type(4) { background: var(--visited-5); }
+    .intensity-step:nth-of-type(5) { background: var(--visited-10); }
+    .intensity-step:nth-of-type(6) { background: var(--visited-20); }
+    .map-header-actions { display: flex; align-items: center; gap: 8px; }
+    .marker-toggle {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border: 1px solid rgba(255,255,255,.65);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(14px);
+      font-size: 11px;
+      cursor: pointer;
+      pointer-events: auto;
+      user-select: none;
+    }
+    .marker-toggle input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .toggle-track { position: relative; width: 28px; height: 17px; flex: 0 0 auto; border-radius: 999px; background: #b9c1bd; transition: background .18s; }
+    .toggle-track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.18); transition: transform .18s; }
+    .marker-toggle input:checked + .toggle-track { background: var(--visited); }
+    .marker-toggle input:checked + .toggle-track::after { transform: translateX(11px); }
+    .marker-toggle input:focus-visible + .toggle-track { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .map-controls { position: absolute; right: 22px; bottom: 22px; display: grid; gap: 8px; }
+    .map-control {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 13px;
+      background: rgba(255,255,255,.78);
+      box-shadow: 0 8px 24px rgba(31,50,44,.12);
+      font-size: 20px;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+    }
+    .map-control:hover { background: white; }
+
+    .tooltip {
+      position: fixed;
+      z-index: 20;
+      max-width: 220px;
+      padding: 9px 11px;
+      border-radius: 11px;
+      color: white;
+      background: rgba(23,34,31,.94);
+      box-shadow: 0 8px 25px rgba(0,0,0,.15);
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(10px, 10px);
+      transition: opacity .1s;
+    }
+    .tooltip.show { opacity: 1; }
+    .tooltip small { display: block; margin-top: 3px; color: rgba(255,255,255,.7); }
+
+    dialog {
+      width: min(480px, calc(100% - 28px));
+      max-height: calc(100% - 28px);
+      padding: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background: #fbfaf6;
+      border: 0;
+      border-radius: 24px;
+      box-shadow: 0 34px 100px rgba(20,31,28,.3);
+    }
+    dialog::backdrop { background: rgba(20,31,28,.45); backdrop-filter: blur(5px); }
+    .dialog-head { display: flex; justify-content: space-between; gap: 18px; padding: 25px 26px 18px; border-bottom: 1px solid var(--line); }
+    .dialog-head h2 { margin: 0; font-family: Georgia, serif; font-size: 28px; font-weight: 500; }
+    .dialog-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .icon-button { width: 36px; height: 36px; border: 0; border-radius: 50%; background: rgba(23,34,31,.06); font-size: 20px; cursor: pointer; }
+    .dialog-body { max-height: min(650px, calc(100vh - 170px)); overflow: auto; padding: 22px 26px 26px; }
+    .field-label { display: block; margin: 0 0 8px 2px; color: var(--muted); font-size: 11px; font-weight: 720; }
+    input[type="text"] {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px;
+      color: var(--ink);
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+    }
+    input:focus { border-color: var(--visited); box-shadow: 0 0 0 3px rgba(38,124,112,.1); }
+    .date-mode {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 4px;
+      border-radius: 13px;
+      background: rgba(23,34,31,.065);
+    }
+    .date-mode-button {
+      min-height: 36px;
+      padding: 7px 6px;
+      border: 0;
+      border-radius: 9px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 11px;
+      font-weight: 680;
+      cursor: pointer;
+    }
+    .date-mode-button:hover { color: var(--ink); }
+    .date-mode-button.active { color: var(--ink); background: white; box-shadow: 0 2px 8px rgba(23,34,31,.09); }
+    .date-picker-body {
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.7);
+    }
+    .date-picker-body[hidden] { display: none; }
+    .picker-nav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
+    .picker-nav-button { width: 32px; height: 30px; border: 0; border-radius: 9px; background: rgba(23,34,31,.055); font-size: 18px; cursor: pointer; }
+    .picker-nav-button:hover { color: var(--visited); background: rgba(38,124,112,.1); }
+    .picker-nav .picker-year-input {
+      width: 88px;
+      flex: 0 0 88px;
+      height: 32px;
+      justify-self: center;
+      padding: 0 8px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: var(--ink);
+      background: transparent;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 780;
+      outline: none;
+    }
+    .picker-year-input:hover { background: rgba(23,34,31,.045); }
+    .picker-year-input:focus { border-color: var(--visited); background: white; box-shadow: 0 0 0 3px rgba(38,124,112,.1); }
+    .picker-help { margin: -2px 0 9px; color: var(--muted); text-align: center; font-size: 10px; }
+    .picker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    .picker-grid[hidden] { display: none; }
+    .picker-option { min-height: 31px; padding: 5px 3px; border: 1px solid transparent; border-radius: 8px; color: var(--muted); background: transparent; font-size: 11px; cursor: pointer; }
+    .picker-option:hover { color: var(--ink); background: rgba(38,124,112,.08); }
+    .picker-option.selected { color: white; background: var(--visited); }
+    .note-field { display: block; margin-top: 13px; }
+    .primary-button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 13px;
+      color: white;
+      background: var(--accent);
+      font-weight: 720;
+      cursor: pointer;
+    }
+    .primary-button:hover { background: var(--accent-deep); }
+    .form-actions { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
+    .form-actions.editing { grid-template-columns: 1fr auto; }
+    .form-actions .primary-button { margin-top: 0; }
+    .cancel-edit { padding: 0 15px; border: 1px solid var(--line); border-radius: 13px; color: var(--muted); background: transparent; cursor: pointer; }
+    .cancel-edit:hover { color: var(--ink); background: rgba(23,34,31,.05); }
+    .country-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 18px; }
+    .country-summary[hidden] { display: none; }
+    .summary-card { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.5); }
+    .summary-card strong { display: block; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+    .summary-card span { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
+    .history-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 24px 0 7px; }
+    .visits-heading { margin: 0; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    .history-sort { padding: 5px 8px; border: 0; border-radius: 8px; color: var(--muted); background: rgba(23,34,31,.055); font-size: 10px; cursor: pointer; }
+    .history-sort:hover { color: var(--ink); }
+    .visit-row { display: flex; align-items: center; gap: 10px; padding: 11px 2px; border-bottom: 1px solid var(--line); }
+    .visit-row:last-child { border-bottom: 0; }
+    .visit-copy { min-width: 0; flex: 1; }
+    .visit-copy strong { display: block; font-size: 13px; }
+    .visit-copy span { display: block; margin-top: 3px; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .visit-actions { display: flex; gap: 5px; }
+    .edit-button, .delete-button { padding: 7px 9px; border: 0; border-radius: 9px; font-size: 11px; cursor: pointer; }
+    .edit-button { color: var(--visited); background: rgba(38,124,112,.09); }
+    .delete-button { color: #a43f2c; background: rgba(239,106,76,.10); }
+    .country-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+    .country-dialog-actions[hidden] { display: none; }
+    .dialog-secondary, .dialog-danger { padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: transparent; font-size: 11px; cursor: pointer; }
+    .dialog-secondary { color: var(--muted); }
+    .dialog-secondary:hover { color: var(--ink); background: rgba(38,124,112,.07); }
+    .dialog-danger { color: #a43f2c; border-color: rgba(164,63,44,.18); background: rgba(239,106,76,.07); }
+    .dialog-danger:hover { background: rgba(239,106,76,.13); }
+    .no-visits { padding: 14px 0 2px; color: var(--muted); font-size: 12px; }
+    .toast-region { position: fixed; left: 50%; bottom: 24px; z-index: 100; transform: translateX(-50%); pointer-events: none; }
+    .toast { min-width: 220px; max-width: min(380px, calc(100vw - 32px)); padding: 11px 15px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; color: white; background: rgba(23,34,31,.94); box-shadow: 0 14px 35px rgba(0,0,0,.22); text-align: center; font-size: 12px; opacity: 0; transform: translateY(8px); transition: opacity .18s, transform .18s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: #913d31; }
+    .status { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 13px; pointer-events: none; }
+    .status.hidden { display: none; }
+
+    html[data-theme="dark"] .sidebar,
+    html[data-theme="dark"] .map-shell { border-color: rgba(255,255,255,.07); }
+    html[data-theme="dark"] .theme-toggle,
+    html[data-theme="dark"] .stat,
+    html[data-theme="dark"] .home-button,
+    html[data-theme="dark"] .search,
+    html[data-theme="dark"] .soft-button,
+    html[data-theme="dark"] .list-tool { color-scheme: dark; color: #f0f2f5; background: #252a33; }
+    html[data-theme="dark"] .list-tool option { color: #f0f2f5; background: #252a33; }
+    html[data-theme="dark"] .progress-track { background: rgba(255,255,255,.09); }
+    html[data-theme="dark"] .theme-toggle:hover,
+    html[data-theme="dark"] .theme-toggle:focus-visible,
+    html[data-theme="dark"] .home-button:hover,
+    html[data-theme="dark"] .home-button:focus-visible,
+    html[data-theme="dark"] .soft-button:hover { background: rgba(255,255,255,.085); }
+    html[data-theme="dark"] .home-picker { background: #242831; box-shadow: 0 14px 34px rgba(0,0,0,.32); }
+    html[data-theme="dark"] .home-search,
+    html[data-theme="dark"] input[type="text"] { color: var(--ink); background: #1c2027; }
+    html[data-theme="dark"] .sphere { fill: var(--sea); stroke: rgba(232,236,243,.11); }
+    html[data-theme="dark"] .place-marker .marker-ring { fill: #2b313b; stroke: #7b8491; }
+    html[data-theme="dark"] .place-marker.visited .marker-ring { fill: var(--visited); stroke: #1b2027; }
+    html[data-theme="dark"] .place-marker.home .marker-ring { fill: var(--home); stroke: #1b2027; }
+    html[data-theme="dark"] .map-title,
+    html[data-theme="dark"] .legend,
+    html[data-theme="dark"] .marker-toggle,
+    html[data-theme="dark"] .map-control { border-color: rgba(255,255,255,.08); background: rgba(27,31,39,.86); }
+    html[data-theme="dark"] .map-control:hover { background: #303641; }
+    html[data-theme="dark"] .toggle-track { background: #59616d; }
+    html[data-theme="dark"] .toggle-track::after { background: #e9efec; }
+    html[data-theme="dark"] dialog { background: #1a1e25; box-shadow: 0 34px 100px rgba(0,0,0,.55); }
+    html[data-theme="dark"] dialog::backdrop { background: rgba(4,9,7,.68); }
+    html[data-theme="dark"] .icon-button,
+    html[data-theme="dark"] .date-mode,
+    html[data-theme="dark"] .picker-nav-button { background: rgba(255,255,255,.06); }
+    html[data-theme="dark"] .date-mode-button.active { color: var(--ink); background: #303641; box-shadow: 0 2px 8px rgba(0,0,0,.24); }
+    html[data-theme="dark"] .date-picker-body { background: rgba(255,255,255,.025); }
+    html[data-theme="dark"] .summary-card { background: rgba(255,255,255,.035); }
+    html[data-theme="dark"] .history-sort { background: rgba(255,255,255,.06); }
+    html[data-theme="dark"] .picker-year-input:hover { background: rgba(255,255,255,.05); }
+    html[data-theme="dark"] .picker-year-input:focus { background: #252a33; }
+    html[data-theme="dark"] .country-item:hover,
+    html[data-theme="dark"] .country-item:focus-visible { background: rgba(63,166,170,.13); }
+    html[data-theme="dark"] .tooltip { background: rgba(10,12,16,.95); }
+    html[data-theme="dark"] .chevron { color: #727b88; }
+    html[data-theme="dark"] .delete-button { color: #ff9a82; background: rgba(240,120,89,.12); }
+    html[data-theme="dark"] .edit-button { color: #75c6ca; background: rgba(63,166,170,.13); }
+
+    body, .sidebar, .map-shell, dialog, .stat, .home-button, .search, .soft-button,
+    .map-title, .legend, .marker-toggle, .map-control, .date-mode-button, .date-picker-body,
+    input { transition: color .2s ease, background-color .2s ease, border-color .2s ease, fill .2s ease; }
+
+    @media (max-width: 820px) {
+      body { overflow: auto; }
+      .app { grid-template-columns: 1fr; grid-template-rows: auto 68vh; height: auto; min-height: 100%; padding: 10px; gap: 10px; }
+      .sidebar { padding: 20px 18px 16px; }
+      .intro { margin: 16px 0; }
+      .country-list { max-height: 180px; }
+      .map-shell { min-height: 520px; }
+      .map-header { top: 15px; left: 15px; right: 15px; }
+      .legend { display: none; }
+      .map-controls { right: 14px; bottom: 14px; }
+    }
+
+    @media (max-width: 480px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .dialog-head, .dialog-body { padding-left: 20px; padding-right: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="sidebar" aria-label="Travel dashboard">
+      <div class="brand-row">
+        <div class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 10c0 5.2-8 12-8 12S4 15.2 4 10a8 8 0 1 1 16 0Z"></path>
+            <circle cx="12" cy="10" r="2.5"></circle>
+          </svg>
+        </div>
+        <div><p class="eyebrow">Travel atlas</p><h1>My World Map</h1></div>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" title="Switch theme">
+          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.4 8.4 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"></path></svg>
+          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.7"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
+        </button>
+      </div>
+      <p class="intro">Collect the geography of your travels. Pick a place, add what you remember, and keep the memory on your map.</p>
+
+      <section class="stats" aria-label="Travel statistics">
+        <div class="stat"><strong id="countryCount">0</strong><span>places visited</span></div>
+        <div class="stat"><strong id="visitCount">0</strong><span>trips saved</span></div>
+      </section>
+      <div class="travel-progress" aria-label="Travel progress">
+        <div class="progress-copy"><span id="progressLabel">0 of 0 mapped places</span><strong id="progressPercent">0%</strong></div>
+        <div class="progress-track"><span class="progress-fill" id="progressFill"></span></div>
+      </div>
+
+      <section class="home-section" aria-label="Home country">
+        <button class="home-button" id="homeButton" type="button" aria-expanded="false" aria-controls="homePicker">
+          <span class="home-icon" aria-hidden="true">⌂</span>
+          <span class="home-copy"><small>Home country</small><strong id="homeCountryName">Choose your home</strong></span>
+          <span class="home-change" id="homeAction">Set</span>
+        </button>
+        <div class="home-picker" id="homePicker" hidden>
+          <input class="home-search" id="homeSearch" type="search" placeholder="Search countries" autocomplete="off" aria-label="Search home country">
+          <div class="home-options" id="homeOptions"></div>
+          <div class="home-picker-footer"><button class="home-remove" id="removeHome" type="button">Remove home country</button></div>
+        </div>
+      </section>
+
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+        <input class="search" id="search" type="search" placeholder="Find a place" autocomplete="off" aria-label="Find a place" aria-keyshortcuts="/" title="Press / to search">
+      </div>
+
+      <div class="list-title"><h2>My places</h2><button class="text-button" id="showAll" type="button">Show all</button></div>
+      <div class="list-tools">
+        <button class="list-tool" id="sortPlaces" type="button" aria-label="Sort places">Sort: recent</button>
+        <select class="list-tool" id="yearFilter" aria-label="Filter trips by year"><option value="all">All dates</option></select>
+      </div>
+      <div class="country-list" id="countryList" aria-live="polite"></div>
+
+      <footer class="sidebar-footer">
+        <button class="soft-button" id="exportButton" type="button">Backup</button>
+        <button class="soft-button" id="restoreButton" type="button">Restore</button>
+        <button class="soft-button" id="resetButton" type="button">Clear all</button>
+        <input id="restoreInput" type="file" accept=".json,application/json" hidden>
+      </footer>
+    </aside>
+
+    <section class="map-shell" aria-label="Interactive world map">
+      <svg id="map" role="img" aria-label="World map. Visited places are highlighted in green."></svg>
+      <div class="map-header">
+        <div class="map-title"><strong>Where have you been?</strong><span>Choose a place on the map</span></div>
+        <div class="map-header-actions">
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot"></span> Visited</span>
+            <span class="legend-item"><span class="legend-dot home"></span> Home</span>
+            <span class="legend-divider" aria-hidden="true"></span>
+            <span class="intensity-scale" title="More trips use a deeper colour"><small>Trips 1–20+</small><span class="intensity-step"></span><span class="intensity-step"></span><span class="intensity-step"></span><span class="intensity-step"></span><span class="intensity-step"></span><span class="intensity-step"></span></span>
+          </div>
+          <label class="marker-toggle" title="Visited small places always remain visible">
+            <input id="markerToggle" type="checkbox">
+            <span class="toggle-track" aria-hidden="true"></span>
+            <span>Small places</span>
+          </label>
+        </div>
+      </div>
+      <div class="map-controls" aria-label="Map zoom">
+        <button class="map-control" id="zoomIn" type="button" aria-label="Zoom in">+</button>
+        <button class="map-control" id="zoomOut" type="button" aria-label="Zoom out">−</button>
+        <button class="map-control" id="resetZoom" type="button" aria-label="Show the whole map">⌂</button>
+      </div>
+      <div class="status" id="status">Loading the map…</div>
+    </section>
+  </main>
+
+  <div class="tooltip" id="tooltip" role="tooltip"></div>
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <dialog id="countryDialog" aria-labelledby="dialogTitle">
+    <div class="dialog-head">
+      <div><h2 id="dialogTitle"></h2><p id="dialogMeta">Add a trip</p></div>
+      <button class="icon-button" id="closeDialog" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="dialog-body">
+      <div class="country-summary" id="countrySummary" hidden>
+        <div class="summary-card"><strong id="summaryTrips">0</strong><span>Trips</span></div>
+        <div class="summary-card"><strong id="summaryFirst">—</strong><span>First visit</span></div>
+        <div class="summary-card"><strong id="summaryLatest">—</strong><span>Latest visit</span></div>
+      </div>
+      <form id="visitForm">
+        <div class="date-field">
+          <span class="field-label">When was this trip?</span>
+          <div class="date-mode" id="dateMode" role="group" aria-label="Date precision">
+            <button class="date-mode-button active" type="button" data-date-mode="none">Date unknown</button>
+            <button class="date-mode-button" type="button" data-date-mode="year">Year only</button>
+            <button class="date-mode-button" type="button" data-date-mode="month">Month &amp; year</button>
+          </div>
+          <div class="date-picker-body" id="datePickerBody" hidden>
+            <div class="picker-nav">
+              <button class="picker-nav-button" id="pickerPrevious" type="button" aria-label="Previous">‹</button>
+              <input class="picker-year-input" id="pickerYearInput" type="text" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Year">
+              <button class="picker-nav-button" id="pickerNext" type="button" aria-label="Next">›</button>
+            </div>
+            <p class="picker-help">Type any year, or use the arrows</p>
+            <div class="picker-grid" id="pickerOptions"></div>
+          </div>
+        </div>
+        <label class="note-field"><span class="field-label">Note (optional)</span><input id="visitNote" type="text" maxlength="80" placeholder="For example, summer holiday"></label>
+        <div class="form-actions" id="formActions">
+          <button class="primary-button" id="submitTripButton" type="submit">Add trip</button>
+          <button class="cancel-edit" id="cancelEdit" type="button" hidden>Cancel</button>
+        </div>
+      </form>
+      <div class="history-head">
+        <h3 class="visits-heading">Trip history</h3>
+        <button class="history-sort" id="historySort" type="button" hidden>Newest first</button>
+      </div>
+      <div id="visitHistory"></div>
+      <div class="country-dialog-actions" id="countryDialogActions" hidden>
+        <button class="dialog-secondary" id="copyCountrySummary" type="button">Copy summary</button>
+        <button class="dialog-danger" id="clearCountryTrips" type="button">Clear this country</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const STORAGE_KEY = 'travel-atlas-v2';
+      const LEGACY_KEY = 'visits';
+      const MARKERS_KEY = 'travel-atlas-show-small-places';
+      const THEME_KEY = 'travel-atlas-theme';
+      const mapSvg = d3.select('#map');
+      const tooltip = document.querySelector('#tooltip');
+      const dialog = document.querySelector('#countryDialog');
+      const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
+      const monthNames = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+      const alpha3to2 = Object.fromEntries([
+        ['AFG','AF'],['AGO','AO'],['ALB','AL'],['ARE','AE'],['ARG','AR'],['ARM','AM'],['ATA','AQ'],['ATF','TF'],['AUS','AU'],['AUT','AT'],['AZE','AZ'],
+        ['BDI','BI'],['BEL','BE'],['BEN','BJ'],['BFA','BF'],['BGD','BD'],['BGR','BG'],['BHS','BS'],['BIH','BA'],['BLR','BY'],['BLZ','BZ'],['BOL','BO'],['BRA','BR'],['BRN','BN'],['BTN','BT'],['BWA','BW'],
+        ['CAF','CF'],['CAN','CA'],['CHE','CH'],['CHL','CL'],['CHN','CN'],['CIV','CI'],['CMR','CM'],['COD','CD'],['COG','CG'],['COL','CO'],['CRI','CR'],['CUB','CU'],['CYP','CY'],['CZE','CZ'],
+        ['DEU','DE'],['DJI','DJ'],['DNK','DK'],['DOM','DO'],['DZA','DZ'],['ECU','EC'],['EGY','EG'],['ERI','ER'],['ESH','EH'],['ESP','ES'],['EST','EE'],['ETH','ET'],['FIN','FI'],['FJI','FJ'],['FLK','FK'],['FRA','FR'],
+        ['GAB','GA'],['GBR','GB'],['GEO','GE'],['GHA','GH'],['GIN','GN'],['GMB','GM'],['GNB','GW'],['GNQ','GQ'],['GRC','GR'],['GRL','GL'],['GTM','GT'],['GUY','GY'],['HND','HN'],['HRV','HR'],['HTI','HT'],['HUN','HU'],
+        ['IDN','ID'],['IND','IN'],['IRL','IE'],['IRN','IR'],['IRQ','IQ'],['ISL','IS'],['ISR','IL'],['ITA','IT'],['JAM','JM'],['JOR','JO'],['JPN','JP'],['KAZ','KZ'],['KEN','KE'],['KGZ','KG'],['KHM','KH'],['KOR','KR'],['KWT','KW'],
+        ['LAO','LA'],['LBN','LB'],['LBR','LR'],['LBY','LY'],['LKA','LK'],['LSO','LS'],['LTU','LT'],['LUX','LU'],['LVA','LV'],['MAR','MA'],['MDA','MD'],['MDG','MG'],['MEX','MX'],['MKD','MK'],['MLI','ML'],['MLT','MT'],['MMR','MM'],['MNE','ME'],['MNG','MN'],['MOZ','MZ'],['MRT','MR'],['MWI','MW'],['MYS','MY'],
+        ['NAM','NA'],['NCL','NC'],['NER','NE'],['NGA','NG'],['NIC','NI'],['NLD','NL'],['NOR','NO'],['NPL','NP'],['NZL','NZ'],['OMN','OM'],['PAK','PK'],['PAN','PA'],['PER','PE'],['PHL','PH'],['PNG','PG'],['POL','PL'],['PRI','PR'],['PRK','KP'],['PRT','PT'],['PRY','PY'],['PSE','PS'],
+        ['QAT','QA'],['ROU','RO'],['RUS','RU'],['RWA','RW'],['SAU','SA'],['SDN','SD'],['SEN','SN'],['SLB','SB'],['SLE','SL'],['SLV','SV'],['SOM','SO'],['SRB','RS'],['SSD','SS'],['SUR','SR'],['SVK','SK'],['SVN','SI'],['SWE','SE'],['SWZ','SZ'],['SYR','SY'],
+        ['TCD','TD'],['TGO','TG'],['THA','TH'],['TJK','TJ'],['TKM','TM'],['TLS','TL'],['TTO','TT'],['TUN','TN'],['TUR','TR'],['TWN','TW'],['TZA','TZ'],['UGA','UG'],['UKR','UA'],['URY','UY'],['USA','US'],['UZB','UZ'],['VEN','VE'],['VNM','VN'],['VUT','VU'],['YEM','YE'],['ZAF','ZA'],['ZMB','ZM'],['ZWE','ZW']
+      ]);
+
+      // Small sovereign states and travel destinations that disappear at a world-map scale.
+      // They receive visible, clickable markers and remain searchable in the sidebar.
+      const smallPlaces = [
+        ['AND','Andorra',1.60,42.55],['MCO','Monaco',7.42,43.74],['LIE','Liechtenstein',9.56,47.17],
+        ['SMR','San Marino',12.46,43.94],['VAT','Vatican City',12.45,41.90],['MLT','Malta',14.38,35.94],
+        ['GIB','Gibraltar',-5.35,36.14],['FRO','Faroe Islands',-6.91,61.89],['IMN','Isle of Man',-4.55,54.24],
+        ['JEY','Jersey',-2.13,49.21],['GGY','Guernsey',-2.59,49.46],['ALA','Åland Islands',20.00,60.18],
+        ['HKG','Hong Kong',114.17,22.32],['MAC','Macao',113.54,22.20],['SGP','Singapore',103.82,1.35],
+        ['BHR','Bahrain',50.56,26.07],['MDV','Maldives',73.22,3.20],['BRN','Brunei',114.73,4.54],
+        ['ABW','Aruba',-69.97,12.52],['AIA','Anguilla',-63.07,18.22],['ATG','Antigua and Barbuda',-61.80,17.06],
+        ['BES','Caribbean Netherlands',-68.26,12.18],['BRB','Barbados',-59.54,13.19],['BLM','Saint Barthélemy',-62.83,17.90],
+        ['CUW','Curaçao',-68.99,12.17],['DMA','Dominica',-61.37,15.41],['GRD','Grenada',-61.68,12.12],
+        ['GLP','Guadeloupe',-61.55,16.27],['KNA','Saint Kitts and Nevis',-62.78,17.36],['LCA','Saint Lucia',-60.98,13.91],
+        ['MAF','Saint Martin',-63.05,18.07],['MSR','Montserrat',-62.19,16.74],['MTQ','Martinique',-61.02,14.64],
+        ['VCT','Saint Vincent and the Grenadines',-61.20,13.25],['SXM','Sint Maarten',-63.06,18.04],
+        ['TCA','Turks and Caicos Islands',-71.80,21.69],['VGB','British Virgin Islands',-64.62,18.42],
+        ['VIR','U.S. Virgin Islands',-64.90,18.34],['CYM','Cayman Islands',-80.57,19.31],['BMU','Bermuda',-64.75,32.31],
+        ['CPV','Cabo Verde',-23.61,15.12],['COM','Comoros',43.33,-11.65],['MUS','Mauritius',57.55,-20.35],
+        ['MYT','Mayotte',45.17,-12.83],['REU','Réunion',55.54,-21.12],['SYC','Seychelles',55.45,-4.62],
+        ['STP','São Tomé and Príncipe',6.61,0.19],['SHN','Saint Helena',-5.71,-15.97],
+        ['CXR','Christmas Island',105.63,-10.45],['CCK','Cocos (Keeling) Islands',96.84,-12.16],
+        ['FSM','Micronesia',158.22,6.89],['GUM','Guam',144.79,13.44],['KIR','Kiribati',-157.36,1.87],
+        ['MHL','Marshall Islands',171.18,7.13],['MNP','Northern Mariana Islands',145.67,15.19],['NRU','Nauru',166.93,-0.52],
+        ['PLW','Palau',134.58,7.51],['TON','Tonga',-175.20,-21.18],['TUV','Tuvalu',179.20,-8.52],
+        ['WSM','Samoa',-172.10,-13.76],['ASM','American Samoa',-170.70,-14.31],['COK','Cook Islands',-159.78,-21.24],
+        ['NIU','Niue',-169.87,-19.05],['PYF','French Polynesia',-149.41,-17.68],['NFK','Norfolk Island',167.95,-29.04],
+        ['TKL','Tokelau',-171.85,-9.20],['WLF','Wallis and Futuna',-176.20,-13.77],
+        ['GRL','Greenland',-42.60,71.70],['PRI','Puerto Rico',-66.59,18.22],['TWN','Taiwan',121.00,23.70]
+      ].map(([id, name, lon, lat]) => ({
+        type: 'Feature', id, properties: { name }, geometry: { type: 'Point', coordinates: [lon, lat] }, isMarker: true
+      }));
+
+      let countries = [];
+      let places = [];
+      let markerPlaces = [];
+      let selectedId = null;
+      let dimensions = { width: 0, height: 0 };
+      let currentZoom = d3.zoomIdentity;
+      let showSmallPlaces = localStorage.getItem(MARKERS_KEY) === 'true';
+      let showAllCountries = false;
+      let countrySort = 'recent';
+      let yearFilter = 'all';
+      let historyOrder = 'newest';
+      let editingVisitId = null;
+      let toastTimer;
+      const today = new Date();
+      const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      let dateMode = 'none';
+      let selectedYear = today.getFullYear();
+      let selectedMonth = today.getMonth() + 1;
+      let state = loadState();
+      let projection = d3.geoNaturalEarth1();
+      let path = d3.geoPath(projection);
+      const rootGroup = mapSvg.append('g');
+      const spherePath = rootGroup.append('path').datum({ type: 'Sphere' }).attr('class', 'sphere');
+      const countriesGroup = rootGroup.append('g');
+      const markersGroup = rootGroup.append('g').attr('class', 'markers');
+
+      const zoom = d3.zoom().scaleExtent([1, 7]).on('zoom', event => {
+        currentZoom = event.transform;
+        rootGroup.attr('transform', event.transform);
+        positionMarkers();
+      });
+      mapSvg.call(zoom).on('dblclick.zoom', null);
+
+      function loadState() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          return parsed && parsed.countries ? parsed : { version: 2, countries: {} };
+        } catch { return { version: 2, countries: {} }; }
+      }
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function countryName(featureOrId) {
+        const feature = typeof featureOrId === 'string' ? places.find(c => c.id === featureOrId) : featureOrId;
+        if (!feature) return '';
+        if (feature.isMarker) return feature.properties.name;
+        const code = alpha3to2[feature.id];
+        try { return code ? displayNames.of(code) : feature.properties.name; }
+        catch { return feature.properties.name; }
+      }
+
+      function formatMonth(value) {
+        if (!value) return 'Date not specified';
+        if (/^\d{4}$/.test(value)) return value;
+        const [year, month] = value.split('-').map(Number);
+        if (!year || !month) return value;
+        const result = monthNames.format(new Date(Date.UTC(year, month - 1, 1)));
+        return result.charAt(0).toUpperCase() + result.slice(1);
+      }
+
+      function sortVisits(a, b) { return (b.date || '').localeCompare(a.date || ''); }
+
+      function orderedVisitHistory(id) {
+        const visits = [...visitsFor(id)];
+        const dated = visits.filter(visit => visit.date).sort(sortVisits);
+        if (historyOrder === 'oldest') dated.reverse();
+        return dated.concat(visits.filter(visit => !visit.date));
+      }
+
+      function resetDatePicker() {
+        dateMode = 'none';
+        selectedYear = today.getFullYear();
+        selectedMonth = today.getMonth() + 1;
+        renderDatePicker();
+      }
+
+      function stopEditingVisit() {
+        editingVisitId = null;
+        document.querySelector('#visitNote').value = '';
+        document.querySelector('#submitTripButton').textContent = 'Add trip';
+        document.querySelector('#cancelEdit').hidden = true;
+        document.querySelector('#formActions').classList.remove('editing');
+        resetDatePicker();
+      }
+
+      function startEditingVisit(id) {
+        const visit = visitsFor(selectedId).find(item => item.id === id);
+        if (!visit) return;
+        editingVisitId = id;
+        const precision = visit.precision || (visit.date?.includes('-') ? 'month' : visit.date ? 'year' : 'none');
+        dateMode = precision;
+        if (visit.date) {
+          const [year, month] = visit.date.split('-').map(Number);
+          selectedYear = year;
+          if (month) selectedMonth = month;
+        }
+        document.querySelector('#visitNote').value = visit.note || '';
+        document.querySelector('#submitTripButton').textContent = 'Save changes';
+        document.querySelector('#cancelEdit').hidden = false;
+        document.querySelector('#formActions').classList.add('editing');
+        renderDatePicker();
+        document.querySelector('#visitForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => document.querySelector('#visitNote').focus(), 250);
+      }
+
+      function renderDatePicker() {
+        document.querySelectorAll('[data-date-mode]').forEach(button => {
+          const active = button.dataset.dateMode === dateMode;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        const body = document.querySelector('#datePickerBody');
+        body.hidden = dateMode === 'none';
+        if (dateMode === 'none') return;
+
+        const yearInput = document.querySelector('#pickerYearInput');
+        const options = document.querySelector('#pickerOptions');
+        yearInput.value = selectedYear;
+        options.hidden = dateMode === 'year';
+        if (dateMode === 'month') {
+          options.innerHTML = monthLabels.map((month, index) =>
+            `<button class="picker-option${index + 1 === selectedMonth ? ' selected' : ''}" type="button" data-picker-month="${index + 1}">${month}</button>`
+          ).join('');
+        } else {
+          options.innerHTML = '';
+        }
+      }
+
+      function commitYearInput() {
+        const input = document.querySelector('#pickerYearInput');
+        const year = Number(input.value);
+        if (/^\d{4}$/.test(input.value) && year >= 1000 && year <= 9999) {
+          selectedYear = year;
+          return true;
+        }
+        input.value = selectedYear;
+        return false;
+      }
+
+      function visitsFor(id) { return state.countries[id]?.visits || []; }
+      function isHome(id) { return state.homeCountryId === id; }
+      function frequencyClass(id) {
+        const count = visitsFor(id).length;
+        if (count >= 20) return ' visit-level-20';
+        if (count >= 10) return ' visit-level-10';
+        if (count >= 5) return ' visit-level-5';
+        if (count >= 3) return ' visit-level-3';
+        if (count >= 2) return ' visit-level-2';
+        return '';
+      }
+
+      function frequencyDotClass(count) {
+        if (count >= 20) return ' level-20';
+        if (count >= 10) return ' level-10';
+        if (count >= 5) return ' level-5';
+        if (count >= 3) return ' level-3';
+        if (count >= 2) return ' level-2';
+        return '';
+      }
+
+      function showToast(message, tone = '') {
+        const region = document.querySelector('#toastRegion');
+        clearTimeout(toastTimer);
+        region.innerHTML = `<div class="toast${tone ? ` ${tone}` : ''}">${escapeHtml(message)}</div>`;
+        const toast = region.firstElementChild;
+        requestAnimationFrame(() => toast.classList.add('show'));
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => { if (region.contains(toast)) toast.remove(); }, 200);
+        }, 2600);
+      }
+
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          textarea.remove();
+        }
+      }
+
+      function migrateLegacyData() {
+        if (Object.keys(state.countries).length || !localStorage.getItem(LEGACY_KEY)) return;
+        try {
+          const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY)) || {};
+          Object.entries(legacy).forEach(([englishName, date]) => {
+            const feature = places.find(c => c.properties.name === englishName);
+            if (feature && date) state.countries[feature.id] = { visits: [{ id: crypto.randomUUID(), date, note: '' }] };
+          });
+          saveState();
+        } catch { /* Leave malformed legacy data untouched. */ }
+      }
+
+      async function loadMapData() {
+        const sources = ['./world.geojson', 'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson'];
+        let lastError;
+        for (const source of sources) {
+          try {
+            const response = await fetch(source);
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            return await response.json();
+          } catch (error) { lastError = error; }
+        }
+        throw lastError;
+      }
+
+      function resizeMap() {
+        if (!countries.length) return;
+        const node = document.querySelector('.map-shell');
+        dimensions = { width: node.clientWidth, height: node.clientHeight };
+        mapSvg.attr('viewBox', `0 0 ${dimensions.width} ${dimensions.height}`);
+        const collection = { type: 'FeatureCollection', features: countries };
+        projection = d3.geoNaturalEarth1().fitExtent([[28, 62], [dimensions.width - 28, dimensions.height - 48]], collection);
+        path = d3.geoPath(projection);
+        spherePath.attr('d', path);
+        countriesGroup.selectAll('path').attr('d', path);
+        positionMarkers();
+        zoom.extent([[0, 0], [dimensions.width, dimensions.height]])
+          .translateExtent([[-24, -24], [dimensions.width + 24, dimensions.height + 24]]);
+        mapSvg.call(zoom.transform, d3.zoomIdentity);
+      }
+
+      function positionMarkers() {
+        markersGroup.selectAll('.place-marker').attr('transform', d => {
+          const point = projection(d.geometry.coordinates);
+          return `translate(${point[0]},${point[1]}) scale(${1 / currentZoom.k})`;
+        });
+      }
+
+      function focusOnPlace(id) {
+        const feature = places.find(place => place.id === id);
+        if (!feature || !dimensions.width) return;
+        let center;
+        let scale;
+        if (feature.isMarker) {
+          center = projection(feature.geometry.coordinates);
+          scale = 5.5;
+        } else {
+          const [[x0, y0], [x1, y1]] = path.bounds(feature);
+          center = [(x0 + x1) / 2, (y0 + y1) / 2];
+          scale = Math.min(5.5, Math.max(1.35, .72 / Math.max((x1 - x0) / dimensions.width, (y1 - y0) / dimensions.height)));
+        }
+        const transform = d3.zoomIdentity
+          .translate(dimensions.width / 2, dimensions.height / 2)
+          .scale(scale)
+          .translate(-center[0], -center[1]);
+        mapSvg.transition().duration(520).call(zoom.transform, transform);
+      }
+
+      function renderMap() {
+        countriesGroup.selectAll('path')
+          .data(countries, d => d.id)
+          .join('path')
+          .attr('d', path)
+          .attr('class', d => `country${visitsFor(d.id).length ? ' visited' : ''}${frequencyClass(d.id)}${isHome(d.id) ? ' home' : ''}${d.id === selectedId ? ' selected' : ''}`)
+          .attr('tabindex', 0)
+          .attr('role', 'button')
+          .attr('aria-label', d => `${countryName(d)}${isHome(d.id) ? ', home country' : ''}${visitsFor(d.id).length ? ', visited' : ''}`)
+          .on('click', (_, d) => openCountry(d.id))
+          .on('keydown', (event, d) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCountry(d.id); } })
+          .on('pointerenter', event => d3.select(event.currentTarget).raise())
+          .on('focus', event => d3.select(event.currentTarget).raise())
+          .on('pointermove', (event, d) => showTooltip(event, d))
+          .on('pointerleave', hideTooltip);
+
+        markersGroup.selectAll('.place-marker')
+          .data(markerPlaces, d => d.id)
+          .join(enter => {
+            const marker = enter.append('g').attr('class', 'place-marker');
+            marker.append('circle').attr('class', 'marker-hit').attr('r', 6.5);
+            marker.append('circle').attr('class', 'marker-ring').attr('r', 3.7);
+            return marker;
+          })
+          .attr('transform', d => {
+            const point = projection(d.geometry.coordinates);
+            return `translate(${point[0]},${point[1]}) scale(${1 / currentZoom.k})`;
+          })
+          .attr('class', d => `place-marker${visitsFor(d.id).length ? ' visited' : ''}${frequencyClass(d.id)}${isHome(d.id) ? ' home' : ''}${d.id === selectedId ? ' selected' : ''}${!showSmallPlaces && !visitsFor(d.id).length && !isHome(d.id) ? ' marker-hidden' : ''}`)
+          .attr('tabindex', d => !showSmallPlaces && !visitsFor(d.id).length && !isHome(d.id) ? -1 : 0)
+          .attr('aria-hidden', d => !showSmallPlaces && !visitsFor(d.id).length && !isHome(d.id) ? 'true' : null)
+          .attr('role', 'button')
+          .attr('aria-label', d => `${countryName(d)}${isHome(d.id) ? ', home country' : ''}${visitsFor(d.id).length ? ', visited' : ''}`)
+          .on('click', (_, d) => openCountry(d.id))
+          .on('keydown', (event, d) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCountry(d.id); } })
+          .on('pointermove', (event, d) => showTooltip(event, d))
+          .on('pointerleave', hideTooltip);
+      }
+
+      function showTooltip(event, feature) {
+        const visits = [...visitsFor(feature.id)].sort(sortVisits);
+        const details = [];
+        if (isHome(feature.id)) details.push('Home country');
+        if (visits.length) details.push(`${visits.length} ${englishPlural(visits.length, 'trip')} · ${formatMonth(visits[0].date)}`);
+        else details.push('Click to add a trip');
+        tooltip.innerHTML = `<strong>${escapeHtml(countryName(feature))}</strong><small>${escapeHtml(details.join(' · '))}</small>`;
+        tooltip.style.left = `${Math.min(event.clientX, innerWidth - 230)}px`;
+        tooltip.style.top = `${Math.min(event.clientY, innerHeight - 70)}px`;
+        tooltip.classList.add('show');
+      }
+
+      function hideTooltip() { tooltip.classList.remove('show'); }
+
+      function openCountry(id) {
+        selectedId = id;
+        historyOrder = 'newest';
+        hideTooltip();
+        document.querySelector('#dialogTitle').textContent = countryName(id);
+        stopEditingVisit();
+        renderHistory();
+        renderMap();
+        dialog.showModal();
+        setTimeout(() => document.querySelector('[data-date-mode="none"]').focus(), 20);
+      }
+
+      function renderHistory() {
+        const visits = orderedVisitHistory(selectedId);
+        const datedVisits = [...visitsFor(selectedId)].filter(visit => visit.date).sort(sortVisits);
+        const container = document.querySelector('#visitHistory');
+        const summary = document.querySelector('#countrySummary');
+        const actions = document.querySelector('#countryDialogActions');
+        const sortButton = document.querySelector('#historySort');
+        document.querySelector('#dialogMeta').textContent = visits.length ? `${visits.length} ${englishPlural(visits.length, 'trip')} saved` : 'Add your first trip';
+        summary.hidden = !visits.length;
+        actions.hidden = !visits.length;
+        sortButton.hidden = visits.length < 2;
+        sortButton.textContent = historyOrder === 'newest' ? 'Newest first' : 'Oldest first';
+        document.querySelector('#summaryTrips').textContent = visits.length;
+        document.querySelector('#summaryFirst').textContent = datedVisits.length ? formatMonth(datedVisits.at(-1).date) : 'Not specified';
+        document.querySelector('#summaryLatest').textContent = datedVisits.length ? formatMonth(datedVisits[0].date) : 'Not specified';
+        if (!visits.length) {
+          container.innerHTML = '<div class="no-visits">Your visits to this place will appear here.</div>';
+          return;
+        }
+        container.innerHTML = visits.map(visit => `
+          <div class="visit-row">
+            <div class="visit-copy"><strong>${escapeHtml(formatMonth(visit.date))}</strong>${visit.note ? `<span>${escapeHtml(visit.note)}</span>` : ''}</div>
+            <div class="visit-actions">
+              <button class="edit-button" type="button" data-edit="${visit.id}">Edit</button>
+              <button class="delete-button" type="button" data-delete="${visit.id}">Delete</button>
+            </div>
+          </div>`).join('');
+      }
+
+      function renderHomePanel() {
+        const home = places.find(place => isHome(place.id));
+        document.querySelector('#homeCountryName').textContent = home ? countryName(home) : 'Choose your home';
+        document.querySelector('#homeAction').textContent = home ? 'Change' : 'Set';
+        document.querySelector('#removeHome').hidden = !home;
+      }
+
+      function renderHomeOptions() {
+        const query = document.querySelector('#homeSearch').value.trim().toLocaleLowerCase('en');
+        const matches = places
+          .filter(place => `${countryName(place)} ${place.properties.name}`.toLocaleLowerCase('en').includes(query))
+          .sort((a, b) => countryName(a).localeCompare(countryName(b), 'en'));
+        const container = document.querySelector('#homeOptions');
+        container.innerHTML = matches.length ? matches.map(place => `
+          <button class="home-option" type="button" data-home-country="${place.id}">
+            <span class="home-option-dot"></span><span>${escapeHtml(countryName(place))}</span>${isHome(place.id) ? '<span style="margin-left:auto">✓</span>' : ''}
+          </button>`).join('') : '<div class="empty-list" style="padding:16px 8px">No matching country found.</div>';
+      }
+
+      function updateUi() {
+        const entries = Object.entries(state.countries).filter(([, value]) => value.visits?.length);
+        const tripCount = entries.reduce((sum, [, value]) => sum + value.visits.length, 0);
+        const progress = places.length ? Math.round(entries.length / places.length * 100) : 0;
+        document.querySelector('#countryCount').textContent = entries.length;
+        document.querySelector('#visitCount').textContent = tripCount;
+        document.querySelector('#progressLabel').textContent = `${entries.length} of ${places.length} mapped places`;
+        document.querySelector('#progressPercent').textContent = `${progress}%`;
+        document.querySelector('#progressFill').style.width = `${progress}%`;
+
+        const allVisits = entries.flatMap(([, value]) => value.visits);
+        const years = [...new Set(allVisits.map(visit => visit.date?.slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a));
+        const hasUnknown = allVisits.some(visit => !visit.date);
+        const filter = document.querySelector('#yearFilter');
+        const allowed = new Set(['all', ...years, ...(hasUnknown ? ['unknown'] : [])]);
+        if (!allowed.has(yearFilter)) yearFilter = 'all';
+        filter.innerHTML = `<option value="all">All dates</option>${years.map(year => `<option value="${year}">${year}</option>`).join('')}${hasUnknown ? '<option value="unknown">Date unknown</option>' : ''}`;
+        filter.value = yearFilter;
+        renderHomePanel();
+        renderCountryList();
+        renderMap();
+      }
+
+      function renderCountryList() {
+        const query = document.querySelector('#search').value.trim().toLocaleLowerCase('en');
+        const showAllButton = document.querySelector('#showAll');
+        showAllButton.textContent = showAllCountries ? 'Show visited' : 'Show all';
+        showAllButton.setAttribute('aria-expanded', String(showAllCountries));
+        let items = places.filter(feature => !isHome(feature.id) && (showAllCountries || visitsFor(feature.id).length || query));
+        if (query) items = items.filter(feature => {
+          const tripText = visitsFor(feature.id).map(visit => `${visit.date || ''} ${formatMonth(visit.date)} ${visit.note || ''}`).join(' ');
+          return `${countryName(feature)} ${feature.properties.name} ${tripText}`.toLocaleLowerCase('en').includes(query);
+        });
+        if (yearFilter !== 'all') {
+          items = items.filter(feature => visitsFor(feature.id).some(visit => yearFilter === 'unknown' ? !visit.date : visit.date?.startsWith(yearFilter)));
+        }
+        items.sort((a, b) => {
+          const aVisited = Boolean(visitsFor(a.id).length), bVisited = Boolean(visitsFor(b.id).length);
+          const visitedOrder = Number(bVisited) - Number(aVisited);
+          if (visitedOrder) return visitedOrder;
+          if (countrySort === 'recent') {
+            const aRecent = [...visitsFor(a.id)].sort(sortVisits)[0]?.date || '';
+            const bRecent = [...visitsFor(b.id)].sort(sortVisits)[0]?.date || '';
+            const recentOrder = bRecent.localeCompare(aRecent);
+            if (recentOrder) return recentOrder;
+          }
+          return countryName(a).localeCompare(countryName(b), 'en');
+        });
+        const list = document.querySelector('#countryList');
+        if (!items.length) {
+          list.innerHTML = `<div class="empty-list">${query || yearFilter !== 'all' ? 'No matching place found.' : 'Nothing here yet.<br>Choose your first place on the map.'}</div>`;
+          return;
+        }
+        list.innerHTML = items.map(feature => {
+          const visits = [...visitsFor(feature.id)].sort(sortVisits);
+          const details = [];
+          if (visits.length) details.push(`${visits.length} ${englishPlural(visits.length, 'trip')} · ${formatMonth(visits[0].date)}`);
+          const name = countryName(feature);
+          return `<div class="country-item">
+            <button class="country-focus" type="button" data-focus-country="${feature.id}" title="Show ${escapeHtml(name)} on the map">
+              <span class="country-dot${frequencyDotClass(visits.length)}" style="${visits.length ? '' : 'background:var(--unvisited-dot)'}"></span>
+              <span class="country-copy"><span class="country-name">${escapeHtml(name)}</span><span class="country-date">${escapeHtml(details.length ? details.join(' · ') : 'Not visited yet')}</span></span>
+            </button>
+            <button class="country-open" type="button" data-country="${feature.id}" aria-label="Open trips for ${escapeHtml(name)}" title="Open trips">›</button>
+          </div>`;
+        }).join('');
+      }
+
+      function englishPlural(number, singular) { return number === 1 ? singular : `${singular}s`; }
+
+      function escapeHtml(value = '') {
+        return String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' })[char]);
+      }
+
+      document.querySelector('#dateMode').addEventListener('click', event => {
+        const button = event.target.closest('[data-date-mode]');
+        if (!button) return;
+        dateMode = button.dataset.dateMode;
+        renderDatePicker();
+      });
+
+      document.querySelector('#pickerPrevious').addEventListener('click', () => {
+        commitYearInput();
+        selectedYear -= 1;
+        renderDatePicker();
+      });
+
+      document.querySelector('#pickerNext').addEventListener('click', () => {
+        commitYearInput();
+        selectedYear += 1;
+        renderDatePicker();
+      });
+
+      const pickerYearInput = document.querySelector('#pickerYearInput');
+      pickerYearInput.addEventListener('input', () => {
+        pickerYearInput.value = pickerYearInput.value.replace(/\D/g, '').slice(0, 4);
+        if (pickerYearInput.value.length === 4) selectedYear = Number(pickerYearInput.value);
+      });
+      pickerYearInput.addEventListener('focus', () => pickerYearInput.select());
+      pickerYearInput.addEventListener('blur', commitYearInput);
+      pickerYearInput.addEventListener('keydown', event => {
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+          event.preventDefault();
+          commitYearInput();
+          selectedYear += event.key === 'ArrowUp' ? 1 : -1;
+          renderDatePicker();
+          pickerYearInput.select();
+        }
+        if (event.key === 'Enter') { event.preventDefault(); pickerYearInput.blur(); }
+      });
+
+      document.querySelector('#pickerOptions').addEventListener('click', event => {
+        const monthButton = event.target.closest('[data-picker-month]');
+        if (monthButton) selectedMonth = Number(monthButton.dataset.pickerMonth);
+        renderDatePicker();
+      });
+
+      document.querySelector('#visitForm').addEventListener('submit', event => {
+        event.preventDefault();
+        if (!selectedId) return;
+        if (dateMode !== 'none') commitYearInput();
+        const date = dateMode === 'month'
+          ? `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`
+          : dateMode === 'year' ? String(selectedYear) : '';
+        const note = document.querySelector('#visitNote').value.trim();
+        state.countries[selectedId] ||= { visits: [] };
+        if (editingVisitId) {
+          const index = state.countries[selectedId].visits.findIndex(visit => visit.id === editingVisitId);
+          if (index >= 0) state.countries[selectedId].visits[index] = { ...state.countries[selectedId].visits[index], date, precision: dateMode, note };
+        } else {
+          state.countries[selectedId].visits.push({ id: crypto.randomUUID(), date, precision: dateMode, note });
+        }
+        const wasEditing = Boolean(editingVisitId);
+        saveState();
+        stopEditingVisit();
+        renderHistory();
+        updateUi();
+        showToast(wasEditing ? 'Trip updated' : 'Trip added');
+      });
+
+      document.querySelector('#visitHistory').addEventListener('click', event => {
+        const editButton = event.target.closest('[data-edit]');
+        if (editButton) { startEditingVisit(editButton.dataset.edit); return; }
+        const deleteButton = event.target.closest('[data-delete]');
+        if (!deleteButton || !selectedId) return;
+        if (editingVisitId === deleteButton.dataset.delete) stopEditingVisit();
+        state.countries[selectedId].visits = visitsFor(selectedId).filter(visit => visit.id !== deleteButton.dataset.delete);
+        if (!state.countries[selectedId].visits.length) delete state.countries[selectedId];
+        saveState();
+        renderHistory();
+        updateUi();
+        showToast('Trip deleted');
+      });
+
+      document.querySelector('#cancelEdit').addEventListener('click', stopEditingVisit);
+
+      document.querySelector('#historySort').addEventListener('click', () => {
+        historyOrder = historyOrder === 'newest' ? 'oldest' : 'newest';
+        renderHistory();
+      });
+
+      document.querySelector('#copyCountrySummary').addEventListener('click', async () => {
+        if (!selectedId || !visitsFor(selectedId).length) return;
+        const visits = orderedVisitHistory(selectedId);
+        const lines = visits.map((visit, index) => `${index + 1}. ${formatMonth(visit.date)}${visit.note ? ` — ${visit.note}` : ''}`);
+        await copyToClipboard(`${countryName(selectedId)} — ${visits.length} ${englishPlural(visits.length, 'trip')}\n${lines.join('\n')}`);
+        showToast('Country summary copied');
+      });
+
+      document.querySelector('#clearCountryTrips').addEventListener('click', () => {
+        if (!selectedId || !visitsFor(selectedId).length) return;
+        const name = countryName(selectedId);
+        if (!confirm(`Delete all trips to ${name}? This cannot be undone.`)) return;
+        delete state.countries[selectedId];
+        stopEditingVisit();
+        saveState();
+        renderHistory();
+        updateUi();
+        showToast(`All trips to ${name} were deleted`);
+      });
+
+      document.querySelector('#countryList').addEventListener('click', event => {
+        const openButton = event.target.closest('[data-country]');
+        if (openButton) {
+          openCountry(openButton.dataset.country);
+          return;
+        }
+        const focusButton = event.target.closest('[data-focus-country]');
+        if (focusButton) focusOnPlace(focusButton.dataset.focusCountry);
+      });
+      const themeToggle = document.querySelector('#themeToggle');
+      function updateThemeControl() {
+        const dark = document.documentElement.dataset.theme === 'dark';
+        const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+        themeToggle.setAttribute('aria-label', label);
+        themeToggle.title = label;
+        document.querySelector('meta[name="theme-color"]').content = dark ? '#111318' : '#f3f0e8';
+      }
+      themeToggle.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = nextTheme;
+        localStorage.setItem(THEME_KEY, nextTheme);
+        updateThemeControl();
+      });
+      updateThemeControl();
+      const homeButton = document.querySelector('#homeButton');
+      const homePicker = document.querySelector('#homePicker');
+      const homeSearch = document.querySelector('#homeSearch');
+      function setHomePickerOpen(open) {
+        homePicker.hidden = !open;
+        homeButton.setAttribute('aria-expanded', String(open));
+        if (open) {
+          homeSearch.value = '';
+          renderHomeOptions();
+          setTimeout(() => homeSearch.focus(), 20);
+        }
+      }
+      homeButton.addEventListener('click', () => setHomePickerOpen(homePicker.hidden));
+      homeSearch.addEventListener('input', renderHomeOptions);
+      homeSearch.addEventListener('keydown', event => { if (event.key === 'Escape') setHomePickerOpen(false); });
+      document.querySelector('#homeOptions').addEventListener('click', event => {
+        const option = event.target.closest('[data-home-country]');
+        if (!option) return;
+        state.homeCountryId = option.dataset.homeCountry;
+        saveState();
+        setHomePickerOpen(false);
+        updateUi();
+        showToast(`${countryName(option.dataset.homeCountry)} set as home`);
+      });
+      document.querySelector('#removeHome').addEventListener('click', () => {
+        delete state.homeCountryId;
+        saveState();
+        setHomePickerOpen(false);
+        updateUi();
+        showToast('Home country removed');
+      });
+      document.querySelector('#search').addEventListener('input', () => renderCountryList());
+      document.querySelector('#showAll').addEventListener('click', () => {
+        showAllCountries = !showAllCountries;
+        renderCountryList();
+      });
+      document.querySelector('#sortPlaces').addEventListener('click', event => {
+        countrySort = countrySort === 'recent' ? 'alphabetical' : 'recent';
+        event.currentTarget.textContent = countrySort === 'recent' ? 'Sort: recent' : 'Sort: A–Z';
+        renderCountryList();
+      });
+      document.querySelector('#yearFilter').addEventListener('change', event => {
+        yearFilter = event.target.value;
+        renderCountryList();
+      });
+      const markerToggle = document.querySelector('#markerToggle');
+      markerToggle.checked = showSmallPlaces;
+      markerToggle.addEventListener('change', () => {
+        showSmallPlaces = markerToggle.checked;
+        localStorage.setItem(MARKERS_KEY, String(showSmallPlaces));
+        renderMap();
+      });
+      document.querySelector('#closeDialog').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('close', () => { selectedId = null; renderMap(); });
+      dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+
+      document.querySelector('#zoomIn').addEventListener('click', () => mapSvg.transition().duration(250).call(zoom.scaleBy, 1.45));
+      document.querySelector('#zoomOut').addEventListener('click', () => mapSvg.transition().duration(250).call(zoom.scaleBy, 1 / 1.45));
+      document.querySelector('#resetZoom').addEventListener('click', () => mapSvg.transition().duration(300).call(zoom.transform, d3.zoomIdentity));
+
+      document.querySelector('#exportButton').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), ...state }, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `travel-atlas-${new Date().toISOString().slice(0,10)}.json`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        showToast('Backup downloaded');
+      });
+
+      const restoreInput = document.querySelector('#restoreInput');
+      document.querySelector('#restoreButton').addEventListener('click', () => restoreInput.click());
+      restoreInput.addEventListener('change', async () => {
+        const file = restoreInput.files?.[0];
+        if (!file) return;
+        try {
+          const parsed = JSON.parse(await file.text());
+          if (!parsed || typeof parsed.countries !== 'object' || Array.isArray(parsed.countries)) throw new Error('Invalid backup');
+          const validIds = new Set(places.map(place => place.id));
+          const countriesState = {};
+          Object.entries(parsed.countries).forEach(([id, value]) => {
+            if (!validIds.has(id) || !Array.isArray(value?.visits)) return;
+            const visits = value.visits.filter(visit => visit && typeof visit === 'object').map(visit => ({
+              id: typeof visit.id === 'string' ? visit.id : crypto.randomUUID(),
+              date: typeof visit.date === 'string' ? visit.date : '',
+              precision: ['none','year','month'].includes(visit.precision) ? visit.precision : (visit.date?.includes('-') ? 'month' : visit.date ? 'year' : 'none'),
+              note: typeof visit.note === 'string' ? visit.note.slice(0, 80) : ''
+            }));
+            if (visits.length) countriesState[id] = { visits };
+          });
+          if (!confirm('Replace your current travel data with this backup?')) return;
+          state = { version: 2, countries: countriesState };
+          if (validIds.has(parsed.homeCountryId)) state.homeCountryId = parsed.homeCountryId;
+          saveState();
+          updateUi();
+          showToast('Backup restored');
+        } catch {
+          showToast('This backup file could not be read', 'error');
+        } finally {
+          restoreInput.value = '';
+        }
+      });
+
+      document.querySelector('#resetButton').addEventListener('click', () => {
+        if (!Object.keys(state.countries).length || !confirm('Delete all saved trips? This cannot be undone.')) return;
+        state = { version: 2, countries: {}, homeCountryId: state.homeCountryId };
+        saveState();
+        updateUi();
+        showToast('All trips cleared');
+      });
+
+      document.addEventListener('keydown', event => {
+        const target = event.target;
+        const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) || target.isContentEditable;
+        if (event.key === '/' && !dialog.open && !typing) {
+          event.preventDefault();
+          const search = document.querySelector('#search');
+          search.focus();
+          search.select();
+        }
+        if (event.key === 'Escape' && !homePicker.hidden) setHomePickerOpen(false);
+        else if (event.key === 'Escape' && !dialog.open && document.querySelector('#search').value) {
+          document.querySelector('#search').value = '';
+          renderCountryList();
+        }
+      });
+
+      const resizeObserver = new ResizeObserver(() => resizeMap());
+      resizeObserver.observe(document.querySelector('.map-shell'));
+
+      loadMapData().then(data => {
+        countries = data.features.filter(feature => feature.id !== 'ATA');
+        const countryIds = new Set(countries.map(feature => feature.id));
+        markerPlaces = smallPlaces.filter(place => !countryIds.has(place.id));
+        places = countries.concat(markerPlaces);
+        migrateLegacyData();
+        resizeMap();
+        updateUi();
+        document.querySelector('#status').classList.add('hidden');
+      }).catch(error => {
+        console.error(error);
+        const status = document.querySelector('#status');
+        status.textContent = 'Map data could not be loaded. Please open the site through a local server.';
+      });
+    })();
+  </script>
+</body>
+</html>
