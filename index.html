@@ -5,8 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="google-site-verification" content="_BSIvOvLgSCQH_DwXBwtEurVDYAT5yfZihXP-rTVXzs">
   <meta name="theme-color" content="#f3f0e8">
-  <title>My World Map</title>
+  <meta name="description" content="Create your personal map of visited countries, record past and planned trips, build a travel wishlist, and explore your travel statistics.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://optyp.github.io/travel-map/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="My World Map — Map of Visited Countries">
+  <meta property="og:description" content="Mark countries you have visited, plan future trips, and explore your personal travel statistics.">
+  <meta property="og:url" content="https://optyp.github.io/travel-map/">
+  <title>My World Map — Map of Visited Countries</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "My World Map",
+      "url": "https://optyp.github.io/travel-map/",
+      "description": "An interactive map of visited countries for recording trips, planning future travel, managing a wishlist, and viewing personal travel statistics.",
+      "applicationCategory": "TravelApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Interactive map of visited countries",
+        "Trip history and planned trips",
+        "Travel wishlist",
+        "Personal travel statistics",
+        "Shareable travel map cards"
+      ]
+    }
+  </script>
   <script>
     document.documentElement.dataset.theme = localStorage.getItem('travel-atlas-theme') || 'light';
   </script>
@@ -828,7 +859,7 @@
           <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.7"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
         </button>
       </div>
-      <p class="intro">Collect the geography of your travels. Pick a place, add what you remember, and keep the memory on your map.</p>
+      <p class="intro">Create your personal map of visited countries. Record past and planned trips, add places to your wishlist, and keep every travel memory on your map.</p>
 
       <section class="stats" aria-label="Travel statistics">
         <div class="stat"><strong id="countryCount">0</strong><span>places visited</span></div>
@@ -1979,7 +2010,7 @@
       function showMapView(action) {
         document.querySelector('#statisticsView').hidden = true;
         document.querySelector('.app').hidden = false;
-        document.title = 'My World Map';
+        document.title = 'My World Map — Map of Visited Countries';
         requestAnimationFrame(() => {
           resizeMap();
           if (action) setTimeout(action, 40);

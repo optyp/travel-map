@@ -1,0 +1,23 @@
+# My World Map
+
+> A free interactive map of visited countries for recording travel history, planning future trips, building a wishlist, and exploring personal travel statistics.
+
+My World Map is a browser-based travel tracker. People can mark countries and territories they have visited, save trips with an optional month and year, distinguish planned travel from completed travel, select a home country, and view travel statistics. Travel data remains in the user's browser unless the user chooses to export it.
+
+## Main page
+
+- [My World Map](https://optyp.github.io/travel-map/): Open the interactive visited-countries map and travel tracker.
+
+## Main features
+
+- Interactive world map of visited countries and territories
+- Completed and planned trip tracking
+- Travel wishlist and home country
+- Year-based map filtering
+- Personal travel statistics
+- Downloadable share cards without private trip notes
+- Light and dark themes
+
+## Privacy
+
+Trip notes and exact personal travel details are not published by the site. Saved travel data is stored locally in the user's browser.
