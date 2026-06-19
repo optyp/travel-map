@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f3f0e8">
   <title>My World Map</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <script>
     document.documentElement.dataset.theme = localStorage.getItem('travel-atlas-theme') || 'light';
   </script>
@@ -1027,6 +1028,7 @@
       let mapPeriod = 'all';
       let availableMapPeriods = ['all'];
       let statisticsPeriod = 'all';
+      let pendingMapAction = null;
       let editingVisitId = null;
       let toastTimer;
       let today = new Date();
@@ -1715,20 +1717,45 @@
         mapSvg.transition().duration(550).call(zoom.transform, transform);
       }
 
-      function openStatisticsView() {
+      function openStatisticsView(pushHistory = true) {
+        if (pushHistory && location.hash !== '#statistics') history.pushState({ view: 'statistics' }, '', '#statistics');
         document.querySelector('.app').hidden = true;
         document.querySelector('#statisticsView').hidden = false;
+        document.title = 'Travel Statistics · My World Map';
         renderStatistics();
         document.querySelector('#statisticsView').scrollTop = 0;
       }
 
-      function returnToMap(action) {
+      function showMapView(action) {
         document.querySelector('#statisticsView').hidden = true;
         document.querySelector('.app').hidden = false;
+        document.title = 'My World Map';
         requestAnimationFrame(() => {
           resizeMap();
           if (action) setTimeout(action, 40);
         });
+      }
+
+      function returnToMap(action) {
+        pendingMapAction = action || null;
+        if (location.hash === '#statistics' && history.state?.view === 'statistics') {
+          history.back();
+          return;
+        }
+        history.replaceState({ view: 'map' }, '', `${location.pathname}${location.search}`);
+        const nextAction = pendingMapAction;
+        pendingMapAction = null;
+        showMapView(nextAction);
+      }
+
+      function syncViewWithHistory() {
+        if (location.hash === '#statistics') {
+          openStatisticsView(false);
+          return;
+        }
+        const nextAction = pendingMapAction;
+        pendingMapAction = null;
+        showMapView(nextAction);
       }
 
       function placeMatchesSearch(place, query) {
@@ -2038,7 +2065,7 @@
         showAllCountries = false;
         updateUi();
       });
-      document.querySelector('#openStatistics').addEventListener('click', openStatisticsView);
+      document.querySelector('#openStatistics').addEventListener('click', () => openStatisticsView());
       document.querySelector('#backToMap').addEventListener('click', () => returnToMap());
       document.querySelector('#statisticsPeriod').addEventListener('change', event => {
         statisticsPeriod = event.target.value;
@@ -2071,6 +2098,7 @@
           focusOnPlace(countryId);
         });
       });
+      window.addEventListener('popstate', syncViewWithHistory);
       document.querySelector('#sortPlaces').addEventListener('click', event => {
         countrySort = countrySort === 'recent' ? 'alphabetical' : 'recent';
         event.currentTarget.textContent = countrySort === 'recent' ? 'Sort: recent' : 'Sort: A–Z';
@@ -2194,6 +2222,7 @@
         resizeMap();
         updateUi();
         scheduleDateRefresh();
+        if (location.hash === '#statistics') openStatisticsView(false);
         document.querySelector('#status').classList.add('hidden');
       }).catch(error => {
         console.error(error);
