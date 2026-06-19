@@ -180,6 +180,8 @@
     .home-option { width: 100%; display: flex; align-items: center; gap: 9px; padding: 8px; border: 0; border-radius: 9px; background: transparent; text-align: left; font-size: 12px; cursor: pointer; }
     .home-option:hover, .home-option:focus-visible { background: rgba(215,131,63,.1); outline: none; }
     .home-option-dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: var(--home); }
+    .home-current { margin-left: auto; }
+    .home-empty { padding: 16px 8px; }
     .home-picker-footer { display: flex; justify-content: flex-end; padding: 6px 3px 0; border-top: 1px solid var(--line); }
     .home-remove { border: 0; color: var(--muted); background: none; font-size: 10px; cursor: pointer; }
     .home-remove:hover { color: var(--accent-deep); }
@@ -239,11 +241,10 @@
     .country-dot.level-5 { background: var(--visited-5); }
     .country-dot.level-10 { background: var(--visited-10); }
     .country-dot.level-20 { background: var(--visited-20); box-shadow: 0 0 0 3px rgba(38,124,112,.14); }
+    .country-dot.unvisited { background: var(--unvisited-dot); }
     .country-copy { min-width: 0; flex: 1; }
     .country-name { display: block; overflow: hidden; font-size: 13px; font-weight: 680; text-overflow: ellipsis; white-space: nowrap; }
     .country-date { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
-    .chevron { color: #9aa39f; font-size: 18px; }
-
     .sidebar-footer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; padding-top: 12px; border-top: 1px solid var(--line); }
     .soft-button {
       min-width: 0;
@@ -569,7 +570,6 @@
     html[data-theme="dark"] .country-item:hover,
     html[data-theme="dark"] .country-item:focus-visible { background: rgba(63,166,170,.13); }
     html[data-theme="dark"] .tooltip { background: rgba(10,12,16,.95); }
-    html[data-theme="dark"] .chevron { color: #727b88; }
     html[data-theme="dark"] .delete-button { color: #ff9a82; background: rgba(240,120,89,.12); }
     html[data-theme="dark"] .edit-button { color: #75c6ca; background: rgba(63,166,170,.13); }
 
@@ -746,7 +746,7 @@
       const tooltip = document.querySelector('#tooltip');
       const dialog = document.querySelector('#countryDialog');
       const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
-      const monthNames = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+      const visitDateFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
       const alpha3to2 = Object.fromEntries([
         ['AFG','AF'],['AGO','AO'],['ALB','AL'],['ARE','AE'],['ARG','AR'],['ARM','AM'],['ATA','AQ'],['ATF','TF'],['AUS','AU'],['AUT','AT'],['AZE','AZ'],
         ['BDI','BI'],['BEL','BE'],['BEN','BJ'],['BFA','BF'],['BGD','BD'],['BGR','BG'],['BHS','BS'],['BIH','BA'],['BLR','BY'],['BLZ','BZ'],['BOL','BO'],['BRA','BR'],['BRN','BN'],['BTN','BT'],['BWA','BW'],
@@ -807,6 +807,7 @@
       let toastTimer;
       const today = new Date();
       const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const visitLevels = [20, 10, 5, 3, 2];
       let dateMode = 'none';
       let selectedYear = today.getFullYear();
       let selectedMonth = today.getMonth() + 1;
@@ -836,6 +837,12 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
 
+      function persistState({ renderDialogHistory = false } = {}) {
+        saveState();
+        if (renderDialogHistory) renderHistory();
+        updateUi();
+      }
+
       function countryName(featureOrId) {
         const feature = typeof featureOrId === 'string' ? places.find(c => c.id === featureOrId) : featureOrId;
         if (!feature) return '';
@@ -845,13 +852,17 @@
         catch { return feature.properties.name; }
       }
 
-      function formatMonth(value) {
+      function formatVisitDate(value) {
         if (!value) return 'Date not specified';
         if (/^\d{4}$/.test(value)) return value;
         const [year, month] = value.split('-').map(Number);
         if (!year || !month) return value;
-        const result = monthNames.format(new Date(Date.UTC(year, month - 1, 1)));
+        const result = visitDateFormatter.format(new Date(Date.UTC(year, month - 1, 1)));
         return result.charAt(0).toUpperCase() + result.slice(1);
+      }
+
+      function inferDatePrecision(date) {
+        return date?.includes('-') ? 'month' : date ? 'year' : 'none';
       }
 
       function sortVisits(a, b) { return (b.date || '').localeCompare(a.date || ''); }
@@ -883,7 +894,7 @@
         const visit = visitsFor(selectedId).find(item => item.id === id);
         if (!visit) return;
         editingVisitId = id;
-        const precision = visit.precision || (visit.date?.includes('-') ? 'month' : visit.date ? 'year' : 'none');
+        const precision = visit.precision || inferDatePrecision(visit.date);
         dateMode = precision;
         if (visit.date) {
           const [year, month] = visit.date.split('-').map(Number);
@@ -927,31 +938,26 @@
         const year = Number(input.value);
         if (/^\d{4}$/.test(input.value) && year >= 1000 && year <= 9999) {
           selectedYear = year;
-          return true;
+        } else {
+          input.value = selectedYear;
         }
-        input.value = selectedYear;
-        return false;
       }
 
       function visitsFor(id) { return state.countries[id]?.visits || []; }
       function isHome(id) { return state.homeCountryId === id; }
-      function frequencyClass(id) {
-        const count = visitsFor(id).length;
-        if (count >= 20) return ' visit-level-20';
-        if (count >= 10) return ' visit-level-10';
-        if (count >= 5) return ' visit-level-5';
-        if (count >= 3) return ' visit-level-3';
-        if (count >= 2) return ' visit-level-2';
-        return '';
+      function visitLevel(count) { return visitLevels.find(level => count >= level); }
+      function frequencyClass(count, prefix = 'visit-level-') {
+        const level = visitLevel(count);
+        return level ? ` ${prefix}${level}` : '';
       }
-
-      function frequencyDotClass(count) {
-        if (count >= 20) return ' level-20';
-        if (count >= 10) return ' level-10';
-        if (count >= 5) return ' level-5';
-        if (count >= 3) return ' level-3';
-        if (count >= 2) return ' level-2';
-        return '';
+      function markerIsHidden(id) { return !showSmallPlaces && !visitsFor(id).length && !isHome(id); }
+      function placeAriaLabel(place) {
+        return `${countryName(place)}${isHome(place.id) ? ', home country' : ''}${visitsFor(place.id).length ? ', visited' : ''}`;
+      }
+      function handlePlaceKeydown(event, place) {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        openCountry(place.id);
       }
 
       function showToast(message, tone = '') {
@@ -1054,12 +1060,15 @@
           .data(countries, d => d.id)
           .join('path')
           .attr('d', path)
-          .attr('class', d => `country${visitsFor(d.id).length ? ' visited' : ''}${frequencyClass(d.id)}${isHome(d.id) ? ' home' : ''}${d.id === selectedId ? ' selected' : ''}`)
+          .attr('class', d => {
+            const visitCount = visitsFor(d.id).length;
+            return `country${visitCount ? ' visited' : ''}${frequencyClass(visitCount)}${isHome(d.id) ? ' home' : ''}${d.id === selectedId ? ' selected' : ''}`;
+          })
           .attr('tabindex', 0)
           .attr('role', 'button')
-          .attr('aria-label', d => `${countryName(d)}${isHome(d.id) ? ', home country' : ''}${visitsFor(d.id).length ? ', visited' : ''}`)
+          .attr('aria-label', placeAriaLabel)
           .on('click', (_, d) => openCountry(d.id))
-          .on('keydown', (event, d) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCountry(d.id); } })
+          .on('keydown', handlePlaceKeydown)
           .on('pointerenter', event => d3.select(event.currentTarget).raise())
           .on('focus', event => d3.select(event.currentTarget).raise())
           .on('pointermove', (event, d) => showTooltip(event, d))
@@ -1077,13 +1086,17 @@
             const point = projection(d.geometry.coordinates);
             return `translate(${point[0]},${point[1]}) scale(${1 / currentZoom.k})`;
           })
-          .attr('class', d => `place-marker${visitsFor(d.id).length ? ' visited' : ''}${frequencyClass(d.id)}${isHome(d.id) ? ' home' : ''}${d.id === selectedId ? ' selected' : ''}${!showSmallPlaces && !visitsFor(d.id).length && !isHome(d.id) ? ' marker-hidden' : ''}`)
-          .attr('tabindex', d => !showSmallPlaces && !visitsFor(d.id).length && !isHome(d.id) ? -1 : 0)
-          .attr('aria-hidden', d => !showSmallPlaces && !visitsFor(d.id).length && !isHome(d.id) ? 'true' : null)
+          .attr('class', d => {
+            const visitCount = visitsFor(d.id).length;
+            const home = isHome(d.id);
+            return `place-marker${visitCount ? ' visited' : ''}${frequencyClass(visitCount)}${home ? ' home' : ''}${d.id === selectedId ? ' selected' : ''}${!showSmallPlaces && !visitCount && !home ? ' marker-hidden' : ''}`;
+          })
+          .attr('tabindex', d => markerIsHidden(d.id) ? -1 : 0)
+          .attr('aria-hidden', d => markerIsHidden(d.id) ? 'true' : null)
           .attr('role', 'button')
-          .attr('aria-label', d => `${countryName(d)}${isHome(d.id) ? ', home country' : ''}${visitsFor(d.id).length ? ', visited' : ''}`)
+          .attr('aria-label', placeAriaLabel)
           .on('click', (_, d) => openCountry(d.id))
-          .on('keydown', (event, d) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCountry(d.id); } })
+          .on('keydown', handlePlaceKeydown)
           .on('pointermove', (event, d) => showTooltip(event, d))
           .on('pointerleave', hideTooltip);
       }
@@ -1092,7 +1105,7 @@
         const visits = [...visitsFor(feature.id)].sort(sortVisits);
         const details = [];
         if (isHome(feature.id)) details.push('Home country');
-        if (visits.length) details.push(`${visits.length} ${englishPlural(visits.length, 'trip')} · ${formatMonth(visits[0].date)}`);
+        if (visits.length) details.push(`${visits.length} ${englishPlural(visits.length, 'trip')} · ${formatVisitDate(visits[0].date)}`);
         else details.push('Click to add a trip');
         tooltip.innerHTML = `<strong>${escapeHtml(countryName(feature))}</strong><small>${escapeHtml(details.join(' · '))}</small>`;
         tooltip.style.left = `${Math.min(event.clientX, innerWidth - 230)}px`;
@@ -1127,15 +1140,15 @@
         sortButton.hidden = visits.length < 2;
         sortButton.textContent = historyOrder === 'newest' ? 'Newest first' : 'Oldest first';
         document.querySelector('#summaryTrips').textContent = visits.length;
-        document.querySelector('#summaryFirst').textContent = datedVisits.length ? formatMonth(datedVisits.at(-1).date) : 'Not specified';
-        document.querySelector('#summaryLatest').textContent = datedVisits.length ? formatMonth(datedVisits[0].date) : 'Not specified';
+        document.querySelector('#summaryFirst').textContent = datedVisits.length ? formatVisitDate(datedVisits.at(-1).date) : 'Not specified';
+        document.querySelector('#summaryLatest').textContent = datedVisits.length ? formatVisitDate(datedVisits[0].date) : 'Not specified';
         if (!visits.length) {
           container.innerHTML = '<div class="no-visits">Your visits to this place will appear here.</div>';
           return;
         }
         container.innerHTML = visits.map(visit => `
           <div class="visit-row">
-            <div class="visit-copy"><strong>${escapeHtml(formatMonth(visit.date))}</strong>${visit.note ? `<span>${escapeHtml(visit.note)}</span>` : ''}</div>
+            <div class="visit-copy"><strong>${escapeHtml(formatVisitDate(visit.date))}</strong>${visit.note ? `<span>${escapeHtml(visit.note)}</span>` : ''}</div>
             <div class="visit-actions">
               <button class="edit-button" type="button" data-edit="${visit.id}">Edit</button>
               <button class="delete-button" type="button" data-delete="${visit.id}">Delete</button>
@@ -1158,8 +1171,8 @@
         const container = document.querySelector('#homeOptions');
         container.innerHTML = matches.length ? matches.map(place => `
           <button class="home-option" type="button" data-home-country="${place.id}">
-            <span class="home-option-dot"></span><span>${escapeHtml(countryName(place))}</span>${isHome(place.id) ? '<span style="margin-left:auto">✓</span>' : ''}
-          </button>`).join('') : '<div class="empty-list" style="padding:16px 8px">No matching country found.</div>';
+            <span class="home-option-dot"></span><span>${escapeHtml(countryName(place))}</span>${isHome(place.id) ? '<span class="home-current">✓</span>' : ''}
+          </button>`).join('') : '<div class="empty-list home-empty">No matching country found.</div>';
       }
 
       function updateUi() {
@@ -1185,31 +1198,43 @@
         renderMap();
       }
 
+      function placeMatchesSearch(place, query) {
+        if (!query) return true;
+        const tripText = visitsFor(place.id)
+          .map(visit => `${visit.date || ''} ${formatVisitDate(visit.date)} ${visit.note || ''}`)
+          .join(' ');
+        return `${countryName(place)} ${place.properties.name} ${tripText}`.toLocaleLowerCase('en').includes(query);
+      }
+
+      function placeMatchesYear(place) {
+        if (yearFilter === 'all') return true;
+        return visitsFor(place.id).some(visit => yearFilter === 'unknown' ? !visit.date : visit.date?.startsWith(yearFilter));
+      }
+
+      function latestVisitDate(place) {
+        return visitsFor(place.id).reduce((latest, visit) => visit.date > latest ? visit.date : latest, '');
+      }
+
+      function comparePlaces(a, b) {
+        const visitedOrder = Number(Boolean(visitsFor(b.id).length)) - Number(Boolean(visitsFor(a.id).length));
+        if (visitedOrder) return visitedOrder;
+        if (countrySort === 'recent') {
+          const recentOrder = latestVisitDate(b).localeCompare(latestVisitDate(a));
+          if (recentOrder) return recentOrder;
+        }
+        return countryName(a).localeCompare(countryName(b), 'en');
+      }
+
       function renderCountryList() {
         const query = document.querySelector('#search').value.trim().toLocaleLowerCase('en');
         const showAllButton = document.querySelector('#showAll');
         showAllButton.textContent = showAllCountries ? 'Show visited' : 'Show all';
         showAllButton.setAttribute('aria-expanded', String(showAllCountries));
-        let items = places.filter(feature => !isHome(feature.id) && (showAllCountries || visitsFor(feature.id).length || query));
-        if (query) items = items.filter(feature => {
-          const tripText = visitsFor(feature.id).map(visit => `${visit.date || ''} ${formatMonth(visit.date)} ${visit.note || ''}`).join(' ');
-          return `${countryName(feature)} ${feature.properties.name} ${tripText}`.toLocaleLowerCase('en').includes(query);
-        });
-        if (yearFilter !== 'all') {
-          items = items.filter(feature => visitsFor(feature.id).some(visit => yearFilter === 'unknown' ? !visit.date : visit.date?.startsWith(yearFilter)));
-        }
-        items.sort((a, b) => {
-          const aVisited = Boolean(visitsFor(a.id).length), bVisited = Boolean(visitsFor(b.id).length);
-          const visitedOrder = Number(bVisited) - Number(aVisited);
-          if (visitedOrder) return visitedOrder;
-          if (countrySort === 'recent') {
-            const aRecent = [...visitsFor(a.id)].sort(sortVisits)[0]?.date || '';
-            const bRecent = [...visitsFor(b.id)].sort(sortVisits)[0]?.date || '';
-            const recentOrder = bRecent.localeCompare(aRecent);
-            if (recentOrder) return recentOrder;
-          }
-          return countryName(a).localeCompare(countryName(b), 'en');
-        });
+        const items = places
+          .filter(place => !isHome(place.id))
+          .filter(place => showAllCountries || visitsFor(place.id).length || query)
+          .filter(place => placeMatchesSearch(place, query) && placeMatchesYear(place))
+          .sort(comparePlaces);
         const list = document.querySelector('#countryList');
         if (!items.length) {
           list.innerHTML = `<div class="empty-list">${query || yearFilter !== 'all' ? 'No matching place found.' : 'Nothing here yet.<br>Choose your first place on the map.'}</div>`;
@@ -1217,13 +1242,14 @@
         }
         list.innerHTML = items.map(feature => {
           const visits = [...visitsFor(feature.id)].sort(sortVisits);
-          const details = [];
-          if (visits.length) details.push(`${visits.length} ${englishPlural(visits.length, 'trip')} · ${formatMonth(visits[0].date)}`);
+          const details = visits.length
+            ? `${visits.length} ${englishPlural(visits.length, 'trip')} · ${formatVisitDate(visits[0].date)}`
+            : 'Not visited yet';
           const name = countryName(feature);
           return `<div class="country-item">
             <button class="country-focus" type="button" data-focus-country="${feature.id}" title="Show ${escapeHtml(name)} on the map">
-              <span class="country-dot${frequencyDotClass(visits.length)}" style="${visits.length ? '' : 'background:var(--unvisited-dot)'}"></span>
-              <span class="country-copy"><span class="country-name">${escapeHtml(name)}</span><span class="country-date">${escapeHtml(details.length ? details.join(' · ') : 'Not visited yet')}</span></span>
+              <span class="country-dot${frequencyClass(visits.length, 'level-')}${visits.length ? '' : ' unvisited'}"></span>
+              <span class="country-copy"><span class="country-name">${escapeHtml(name)}</span><span class="country-date">${escapeHtml(details)}</span></span>
             </button>
             <button class="country-open" type="button" data-country="${feature.id}" aria-label="Open trips for ${escapeHtml(name)}" title="Open trips">›</button>
           </div>`;
@@ -1295,10 +1321,8 @@
           state.countries[selectedId].visits.push({ id: crypto.randomUUID(), date, precision: dateMode, note });
         }
         const wasEditing = Boolean(editingVisitId);
-        saveState();
         stopEditingVisit();
-        renderHistory();
-        updateUi();
+        persistState({ renderDialogHistory: true });
         showToast(wasEditing ? 'Trip updated' : 'Trip added');
       });
 
@@ -1310,9 +1334,7 @@
         if (editingVisitId === deleteButton.dataset.delete) stopEditingVisit();
         state.countries[selectedId].visits = visitsFor(selectedId).filter(visit => visit.id !== deleteButton.dataset.delete);
         if (!state.countries[selectedId].visits.length) delete state.countries[selectedId];
-        saveState();
-        renderHistory();
-        updateUi();
+        persistState({ renderDialogHistory: true });
         showToast('Trip deleted');
       });
 
@@ -1326,7 +1348,7 @@
       document.querySelector('#copyCountrySummary').addEventListener('click', async () => {
         if (!selectedId || !visitsFor(selectedId).length) return;
         const visits = orderedVisitHistory(selectedId);
-        const lines = visits.map((visit, index) => `${index + 1}. ${formatMonth(visit.date)}${visit.note ? ` — ${visit.note}` : ''}`);
+        const lines = visits.map((visit, index) => `${index + 1}. ${formatVisitDate(visit.date)}${visit.note ? ` — ${visit.note}` : ''}`);
         await copyToClipboard(`${countryName(selectedId)} — ${visits.length} ${englishPlural(visits.length, 'trip')}\n${lines.join('\n')}`);
         showToast('Country summary copied');
       });
@@ -1337,9 +1359,7 @@
         if (!confirm(`Delete all trips to ${name}? This cannot be undone.`)) return;
         delete state.countries[selectedId];
         stopEditingVisit();
-        saveState();
-        renderHistory();
-        updateUi();
+        persistState({ renderDialogHistory: true });
         showToast(`All trips to ${name} were deleted`);
       });
 
@@ -1386,16 +1406,14 @@
         const option = event.target.closest('[data-home-country]');
         if (!option) return;
         state.homeCountryId = option.dataset.homeCountry;
-        saveState();
         setHomePickerOpen(false);
-        updateUi();
+        persistState();
         showToast(`${countryName(option.dataset.homeCountry)} set as home`);
       });
       document.querySelector('#removeHome').addEventListener('click', () => {
         delete state.homeCountryId;
-        saveState();
         setHomePickerOpen(false);
-        updateUi();
+        persistState();
         showToast('Home country removed');
       });
       document.querySelector('#search').addEventListener('input', () => renderCountryList());
@@ -1452,7 +1470,7 @@
             const visits = value.visits.filter(visit => visit && typeof visit === 'object').map(visit => ({
               id: typeof visit.id === 'string' ? visit.id : crypto.randomUUID(),
               date: typeof visit.date === 'string' ? visit.date : '',
-              precision: ['none','year','month'].includes(visit.precision) ? visit.precision : (visit.date?.includes('-') ? 'month' : visit.date ? 'year' : 'none'),
+              precision: ['none','year','month'].includes(visit.precision) ? visit.precision : inferDatePrecision(visit.date),
               note: typeof visit.note === 'string' ? visit.note.slice(0, 80) : ''
             }));
             if (visits.length) countriesState[id] = { visits };
@@ -1460,8 +1478,7 @@
           if (!confirm('Replace your current travel data with this backup?')) return;
           state = { version: 2, countries: countriesState };
           if (validIds.has(parsed.homeCountryId)) state.homeCountryId = parsed.homeCountryId;
-          saveState();
-          updateUi();
+          persistState();
           showToast('Backup restored');
         } catch {
           showToast('This backup file could not be read', 'error');
@@ -1473,8 +1490,7 @@
       document.querySelector('#resetButton').addEventListener('click', () => {
         if (!Object.keys(state.countries).length || !confirm('Delete all saved trips? This cannot be undone.')) return;
         state = { version: 2, countries: {}, homeCountryId: state.homeCountryId };
-        saveState();
-        updateUi();
+        persistState();
         showToast('All trips cleared');
       });
 
