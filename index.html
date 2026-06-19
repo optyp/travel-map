@@ -158,10 +158,11 @@
     .progress-copy strong { color: var(--visited); font-size: 10px; }
     .progress-track { height: 5px; overflow: hidden; border-radius: 999px; background: rgba(23,34,31,.08); }
     .progress-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--visited), #48a397); transition: width .45s ease; }
-    .quick-actions { display: grid; gap: 7px; margin: -3px 0 14px; }
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: -3px 0 14px; }
     .quick-action { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 11px; color: var(--muted); background: rgba(255,255,255,.48); font-size: 11px; cursor: pointer; }
     .quick-action:hover, .quick-action:focus-visible, .quick-action.active { color: var(--ink); border-color: color-mix(in srgb, var(--wishlist) 45%, transparent); background: color-mix(in srgb, var(--wishlist) 10%, transparent); outline: none; }
     .quick-action strong { min-width: 18px; padding: 2px 5px; border-radius: 999px; color: white; background: var(--wishlist); font-size: 9px; }
+    #showWishlist { grid-column: 1 / -1; }
 
     .home-section { position: relative; margin: -2px 0 14px; }
     .home-button {
@@ -838,6 +839,7 @@
       </div>
       <div class="quick-actions">
         <button class="quick-action" id="openStatistics" type="button"><span aria-hidden="true">▥</span> Statistics</button>
+        <button class="quick-action" id="openShareCardMain" type="button"><span aria-hidden="true">↗</span> Share card</button>
         <button class="quick-action" id="showWishlist" type="button"><span aria-hidden="true">☆</span> Wishlist <strong id="wishlistCount">0</strong></button>
       </div>
 
@@ -1938,9 +1940,9 @@
         return new File([bytes], 'my-world-map.png', { type: 'image/png' });
       }
 
-      function openShareCard() {
+      function openShareCard(preferredPeriod = statisticsPeriod) {
         const years = [...new Set(completedTripRecords().map(trip => trip.date?.slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a));
-        const period = years.includes(statisticsPeriod) ? statisticsPeriod : 'all';
+        const period = years.includes(preferredPeriod) ? preferredPeriod : 'all';
         const periodSelect = document.querySelector('#sharePeriod');
         periodSelect.innerHTML = `<option value="all">All time</option>${years.map(year => `<option value="${year}">${year}</option>`).join('')}`;
         periodSelect.value = period;
@@ -2313,8 +2315,9 @@
         updateUi();
       });
       document.querySelector('#openStatistics').addEventListener('click', () => openStatisticsView());
+      document.querySelector('#openShareCardMain').addEventListener('click', () => openShareCard('all'));
       document.querySelector('#backToMap').addEventListener('click', () => returnToMap());
-      document.querySelector('#openShareCard').addEventListener('click', openShareCard);
+      document.querySelector('#openShareCard').addEventListener('click', () => openShareCard(statisticsPeriod));
       document.querySelector('#closeShareDialog').addEventListener('click', () => shareDialog.close());
       document.querySelector('#cancelShareCard').addEventListener('click', () => shareDialog.close());
       shareDialog.addEventListener('click', event => { if (event.target === shareDialog) shareDialog.close(); });
