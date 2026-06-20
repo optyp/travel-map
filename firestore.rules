@@ -6,14 +6,9 @@ service cloud.firestore {
       allow read, delete: if request.auth != null && request.auth.uid == userId;
       allow create, update: if request.auth != null
         && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(['schemaVersion', 'state', 'profile', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['schemaVersion', 'state', 'updatedAt'])
         && request.resource.data.schemaVersion == 2
-        && request.resource.data.state is map
-        && (!request.resource.data.keys().hasAny(['profile'])
-          || (request.resource.data.profile is map
-            && request.resource.data.profile.keys().hasOnly(['nickname'])
-            && request.resource.data.profile.nickname is string
-            && request.resource.data.profile.nickname.size() <= 30));
+        && request.resource.data.state is map;
     }
   }
 }

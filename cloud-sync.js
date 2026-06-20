@@ -22,7 +22,6 @@ let bridge;
 let auth;
 let database;
 let currentUser = null;
-let currentProfile = { nickname: '' };
 let unsubscribeRemote = null;
 let syncTimer = null;
 let syncInFlight = false;
@@ -34,23 +33,17 @@ const clone = value => structuredClone(value);
 const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const accountStateKey = uid => `travel-atlas-account:${uid}`;
 const accountBaseKey = uid => `travel-atlas-sync-base:${uid}`;
-const accountProfileKey = uid => `travel-atlas-profile:${uid}`;
-const accountProfileDirtyKey = uid => `travel-atlas-profile-dirty:${uid}`;
-
-function normalizeProfile(input) {
-  const nickname = typeof input?.nickname === 'string'
-    ? input.nickname.trim().replace(/\s+/g, ' ').slice(0, 30)
-    : '';
-  return { nickname };
+function normalizeNickname(value) {
+  return typeof value === 'string' ? value.trim().replace(/\s+/g, ' ').slice(0, 30) : '';
 }
 
-function readProfile(uid) {
-  try { return normalizeProfile(JSON.parse(localStorage.getItem(accountProfileKey(uid)))); }
-  catch { return { nickname: '' }; }
+function googleDisplayName(user) {
+  return user?.providerData?.find(profile => profile.providerId === 'google.com')?.displayName || '';
 }
 
-function writeProfile(uid, profile) {
-  localStorage.setItem(accountProfileKey(uid), JSON.stringify(normalizeProfile(profile)));
+function customNickname(user) {
+  const googleName = googleDisplayName(user);
+  return user?.displayName && user.displayName !== googleName ? user.displayName : '';
 }
 
 function inferPrecision(date) {
@@ -253,7 +246,7 @@ function setSignedInUi(user, status = 'Connecting to cloud…') {
   panel.hidden = false;
   signedOutView.hidden = true;
   signedInView.hidden = false;
-  const label = currentProfile.nickname || user.displayName || user.email || 'Google account';
+  const label = user.displayName || googleDisplayName(user) || user.email || 'Google account';
   accountName.textContent = label;
   accountInitial.textContent = label.trim().charAt(0).toUpperCase() || 'G';
   syncStatus.textContent = status;
@@ -263,7 +256,7 @@ function setAccountMenuOpen(open) {
   accountMenu.hidden = !open;
   accountProfileButton.setAttribute('aria-expanded', String(open));
   if (open) {
-    nicknameInput.value = currentProfile.nickname;
+    nicknameInput.value = customNickname(currentUser);
     requestAnimationFrame(() => {
       nicknameInput.focus();
       nicknameInput.select();
@@ -315,34 +308,25 @@ async function syncNow() {
   setStatus(navigator.onLine ? 'Syncing…' : 'Offline · saved on this device');
   try {
     const reference = firestoreApi.doc(database, 'users', user.uid);
-    const result = await firestoreApi.runTransaction(database, async transaction => {
+    const merged = await firestoreApi.runTransaction(database, async transaction => {
       const snapshot = await transaction.get(reference);
       const remote = snapshot.exists() ? normalizeState(snapshot.data().state) : normalizeState(EMPTY_STATE);
-      const remoteProfile = normalizeProfile(snapshot.exists() ? snapshot.data().profile : null);
-      const profileDirty = localStorage.getItem(accountProfileDirtyKey(user.uid)) === 'true';
-      const profile = profileDirty ? readProfile(user.uid) : remoteProfile;
       const base = readState(accountBaseKey(user.uid));
       const local = normalizeState(bridge.getState());
       const next = mergeStates(base, local, remote);
-      if (!snapshot.exists() || !same(next, remote) || profileDirty) {
-        const payload = {
+      if (!snapshot.exists() || !same(next, remote)) {
+        transaction.set(reference, {
           schemaVersion: 2,
           state: next,
           updatedAt: firestoreApi.serverTimestamp()
-        };
-        if (profileDirty || snapshot.data()?.profile) payload.profile = profile;
-        transaction.set(reference, payload, { merge: true });
+        });
       }
-      return { state: next, profile };
+      return next;
     });
     if (currentUser?.uid !== user.uid) return;
-    if (!same(normalizeState(bridge.getState()), result.state)) bridge.applyState(result.state);
-    writeState(accountBaseKey(user.uid), result.state);
-    writeState(accountStateKey(user.uid), result.state);
-    currentProfile = result.profile;
-    writeProfile(user.uid, currentProfile);
-    localStorage.removeItem(accountProfileDirtyKey(user.uid));
-    setSignedInUi(user, 'Synced just now');
+    if (!same(normalizeState(bridge.getState()), merged)) bridge.applyState(merged);
+    writeState(accountBaseKey(user.uid), merged);
+    writeState(accountStateKey(user.uid), merged);
     setStatus('Synced just now');
   } catch (error) {
     console.error('Cloud sync failed:', error);
@@ -374,7 +358,6 @@ async function activateUser(user) {
 
   localStorage.setItem(ACTIVE_ACCOUNT_KEY, user.uid);
   currentUser = user;
-  currentProfile = readProfile(user.uid);
   bridge.applyState(localState);
   writeState(accountStateKey(user.uid), localState);
   setSignedInUi(user);
@@ -387,14 +370,6 @@ async function activateUser(user) {
     if (!snapshot.exists() || currentUser?.uid !== user.uid) return;
     const remote = normalizeState(snapshot.data().state);
     const base = readState(accountBaseKey(user.uid));
-    if (localStorage.getItem(accountProfileDirtyKey(user.uid)) !== 'true') {
-      const remoteProfile = normalizeProfile(snapshot.data().profile);
-      if (!same(remoteProfile, currentProfile)) {
-        currentProfile = remoteProfile;
-        writeProfile(user.uid, currentProfile);
-        setSignedInUi(user, syncStatus.textContent);
-      }
-    }
     if (!same(remote, base)) queueSync(80);
   }, error => {
     console.error('Cloud listener failed:', error);
@@ -408,7 +383,6 @@ function deactivateUser() {
   unsubscribeRemote = null;
   const previousUid = localStorage.getItem(ACTIVE_ACCOUNT_KEY);
   currentUser = null;
-  currentProfile = { nickname: '' };
   if (previousUid) {
     writeState(accountStateKey(previousUid), bridge.getState());
     localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
@@ -461,12 +435,17 @@ async function initializeCloudSync() {
     accountMenu.addEventListener('submit', async event => {
       event.preventDefault();
       if (!currentUser) return;
-      currentProfile = normalizeProfile({ nickname: nicknameInput.value });
-      writeProfile(currentUser.uid, currentProfile);
-      localStorage.setItem(accountProfileDirtyKey(currentUser.uid), 'true');
-      setSignedInUi(currentUser, 'Saving profile…');
+      const nickname = normalizeNickname(nicknameInput.value);
+      setStatus('Saving profile…');
       setAccountMenuOpen(false);
-      await syncNow();
+      try {
+        await authApi.updateProfile(currentUser, { displayName: nickname || null });
+        setSignedInUi(currentUser, 'Synced just now');
+      } catch (error) {
+        console.error('Profile update failed:', error);
+        setStatus('Profile could not be updated');
+        bridge.notify('Nickname could not be saved', 'error');
+      }
     });
     document.addEventListener('click', event => {
       if (!accountMenu.hidden && !panel.contains(event.target)) setAccountMenuOpen(false);

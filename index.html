@@ -200,9 +200,8 @@
     .cloud-copy strong, .cloud-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cloud-copy strong { font-size: 11px; }
     .cloud-copy span { margin-top: 2px; color: var(--muted); font-size: 9px; }
-    .account-profile { min-width: 0; display: flex; flex: 1; align-items: center; gap: 8px; padding: 0; border: 0; color: inherit; background: transparent; text-align: left; cursor: pointer; }
-    .account-profile:hover .cloud-copy strong, .account-profile:focus-visible .cloud-copy strong { color: var(--visited); }
-    .account-profile:focus-visible { outline: none; }
+    .account-name-button { max-width: 100%; display: block; overflow: hidden; padding: 0; border: 0; color: inherit; background: transparent; font: inherit; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+    .account-name-button:hover, .account-name-button:focus-visible { color: var(--visited); outline: none; text-decoration: underline; text-underline-offset: 2px; }
     .account-initial { display: grid; width: 27px; height: 27px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: white; background: var(--visited); font-size: 11px; font-weight: 750; }
     .cloud-sign-out { flex: 0 0 auto; padding: 6px 8px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font-size: 9px; cursor: pointer; }
     .cloud-sign-out:hover, .cloud-sign-out:focus-visible { color: var(--ink); background: rgba(23,34,31,.06); outline: none; }
@@ -969,10 +968,8 @@
               <button class="google-sign-in" id="googleSignIn" type="button"><span class="google-mark" aria-hidden="true">G</span> Sign in to sync</button>
             </div>
             <div class="cloud-signed-in" id="cloudSignedIn" hidden>
-              <button class="account-profile" id="accountProfileButton" type="button" aria-expanded="false" aria-controls="accountMenu" title="Edit profile">
-                <span class="account-initial" id="accountInitial" aria-hidden="true">G</span>
-                <span class="cloud-copy"><strong id="accountName">Google account</strong><span id="cloudStatus">Cloud sync ready</span></span>
-              </button>
+              <span class="account-initial" id="accountInitial" aria-hidden="true">G</span>
+              <span class="cloud-copy"><button class="account-name-button" id="accountProfileButton" type="button" aria-expanded="false" aria-controls="accountMenu" title="Edit nickname"><span id="accountName">Google account</span></button><span id="cloudStatus">Cloud sync ready</span></span>
               <button class="cloud-sign-out" id="googleSignOut" type="button">Sign out</button>
             </div>
             <form class="account-menu" id="accountMenu" hidden>
