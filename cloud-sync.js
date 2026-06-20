@@ -239,6 +239,21 @@ function setStatus(message) {
   syncStatus.textContent = message;
 }
 
+function friendlyAuthError(error) {
+  const messages = {
+    'auth/unauthorized-domain': 'This website is not authorized in Firebase',
+    'auth/operation-not-allowed': 'Google sign-in is not enabled in Firebase',
+    'auth/popup-blocked': 'The browser blocked the Google sign-in window',
+    'auth/popup-closed-by-user': 'The Google sign-in window was closed',
+    'auth/cancelled-popup-request': 'Another sign-in window is already open',
+    'auth/network-request-failed': 'The browser could not reach Google sign-in',
+    'auth/invalid-api-key': 'The Firebase API key is invalid',
+    'auth/web-storage-unsupported': 'This browser blocks the storage required for sign-in'
+  };
+  const code = error?.code || 'unknown-error';
+  return `${messages[code] || 'Google sign-in could not be completed'} (${code})`;
+}
+
 async function waitForApp() {
   bridge = window.travelAtlasCloudBridge;
   if (bridge?.ready) return;
@@ -381,7 +396,7 @@ async function initializeCloudSync() {
           return;
         }
         console.error('Google sign-in failed:', error);
-        bridge.notify('Google sign-in could not be completed', 'error');
+        bridge.notify(friendlyAuthError(error), 'error');
         setSignedOutUi();
       }
     });
