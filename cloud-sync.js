@@ -283,6 +283,13 @@ function friendlyAuthError(error) {
   return messages[code] || 'Google sign-in could not be completed';
 }
 
+function syncFailureMessage(error) {
+  if (error?.code === 'permission-denied') return 'Cloud access blocked · check database rules';
+  if (error?.code === 'failed-precondition') return 'Cloud database needs configuration';
+  if (error?.code === 'unavailable' || error?.code === 'network-request-failed') return 'Offline · changes saved locally';
+  return 'Cloud sync unavailable · changes saved locally';
+}
+
 async function waitForApp() {
   bridge = window.travelAtlasCloudBridge;
   if (bridge?.ready) return;
@@ -330,7 +337,7 @@ async function syncNow() {
     setStatus('Synced just now');
   } catch (error) {
     console.error('Cloud sync failed:', error);
-    if (currentUser?.uid === user.uid) setStatus('Offline · changes saved locally');
+    if (currentUser?.uid === user.uid) setStatus(syncFailureMessage(error));
   } finally {
     syncInFlight = false;
     if (syncRequested && currentUser?.uid === user.uid) queueSync(50);
@@ -373,7 +380,7 @@ async function activateUser(user) {
     if (!same(remote, base)) queueSync(80);
   }, error => {
     console.error('Cloud listener failed:', error);
-    setStatus('Offline · changes saved locally');
+    setStatus(syncFailureMessage(error));
   });
 }
 
@@ -464,7 +471,14 @@ async function initializeCloudSync() {
     });
     window.addEventListener('online', () => queueSync(50));
     window.addEventListener('offline', () => { if (currentUser) setStatus('Offline · saved on this device'); });
-    authApi.onAuthStateChanged(auth, user => user ? activateUser(user) : deactivateUser());
+    authApi.onAuthStateChanged(auth, user => {
+      if (user && currentUser?.uid === user.uid) {
+        currentUser = user;
+        setSignedInUi(user, syncStatus.textContent);
+        return;
+      }
+      return user ? activateUser(user) : deactivateUser();
+    });
   } catch (error) {
     console.error('Firebase could not be initialized:', error);
     panel.hidden = true;
