@@ -283,13 +283,6 @@ function friendlyAuthError(error) {
   return messages[code] || 'Google sign-in could not be completed';
 }
 
-function syncFailureMessage(error) {
-  if (error?.code === 'permission-denied') return 'Cloud access blocked · check database rules';
-  if (error?.code === 'failed-precondition') return 'Cloud database needs configuration';
-  if (error?.code === 'unavailable' || error?.code === 'network-request-failed') return 'Offline · changes saved locally';
-  return 'Cloud sync unavailable · changes saved locally';
-}
-
 async function waitForApp() {
   bridge = window.travelAtlasCloudBridge;
   if (bridge?.ready) return;
@@ -337,7 +330,7 @@ async function syncNow() {
     setStatus('Synced just now');
   } catch (error) {
     console.error('Cloud sync failed:', error);
-    if (currentUser?.uid === user.uid) setStatus(syncFailureMessage(error));
+    if (currentUser?.uid === user.uid) setStatus('Offline · changes saved locally');
   } finally {
     syncInFlight = false;
     if (syncRequested && currentUser?.uid === user.uid) queueSync(50);
@@ -380,7 +373,7 @@ async function activateUser(user) {
     if (!same(remote, base)) queueSync(80);
   }, error => {
     console.error('Cloud listener failed:', error);
-    setStatus(syncFailureMessage(error));
+    setStatus('Offline · changes saved locally');
   });
 }
 

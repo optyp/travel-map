@@ -395,7 +395,7 @@
     .map-title span { color: var(--muted); font-size: 11px; }
     .map-heading { display: grid; justify-items: start; gap: 7px; pointer-events: auto; }
     .map-time-control { display: flex; align-items: center; overflow: hidden; border: 1px solid rgba(255,255,255,.65); border-radius: 999px; color: var(--muted); background: rgba(255,255,255,.72); backdrop-filter: blur(14px); }
-    .map-time-control button { width: 30px; height: 30px; padding: 0; border: 0; color: inherit; background: transparent; font-size: 17px; cursor: pointer; }
+    .map-time-control button { width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; color: inherit; background: transparent; cursor: pointer; }
     .map-time-control button:hover { color: var(--ink); background: rgba(38,124,112,.08); }
     .map-time-control select { height: 30px; padding: 0 5px; border: 0; color: var(--ink); background: transparent; font-size: 10px; font-weight: 680; outline: none; cursor: pointer; }
     .map-time-control option { color: var(--ink); background: white; }
@@ -447,10 +447,12 @@
       border-radius: 13px;
       background: rgba(255,255,255,.78);
       box-shadow: 0 8px 24px rgba(31,50,44,.12);
-      font-size: 20px;
+      line-height: 0;
       cursor: pointer;
       backdrop-filter: blur(12px);
     }
+    .button-icon { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+    .map-control .button-icon { width: 17px; height: 17px; }
     .map-control:hover { background: white; }
 
     .tooltip {
@@ -486,7 +488,7 @@
     .dialog-head { display: flex; justify-content: space-between; gap: 18px; padding: 25px 26px 18px; border-bottom: 1px solid var(--line); }
     .dialog-head h2 { margin: 0; font-family: Georgia, serif; font-size: 28px; font-weight: 500; }
     .dialog-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
-    .icon-button { width: 36px; height: 36px; border: 0; border-radius: 50%; background: rgba(23,34,31,.06); font-size: 20px; cursor: pointer; }
+    .icon-button { width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 auto; padding: 0; border: 0; border-radius: 50%; background: rgba(23,34,31,.06); line-height: 0; cursor: pointer; }
     .dialog-body { max-height: min(650px, calc(100vh - 170px)); overflow: auto; padding: 22px 26px 26px; }
     .field-label { display: block; margin: 0 0 8px 2px; color: var(--muted); font-size: 11px; font-weight: 720; }
     input[type="text"] {
@@ -530,7 +532,7 @@
     }
     .date-picker-body[hidden] { display: none; }
     .picker-nav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
-    .picker-nav-button { width: 32px; height: 30px; border: 0; border-radius: 9px; background: rgba(23,34,31,.055); font-size: 18px; cursor: pointer; }
+    .picker-nav-button { width: 32px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 9px; background: rgba(23,34,31,.055); line-height: 0; cursor: pointer; }
     .picker-nav-button:hover { color: var(--visited); background: rgba(38,124,112,.1); }
     .picker-nav .picker-year-input {
       width: 88px;
@@ -945,9 +947,9 @@
         <div class="map-heading">
           <div class="map-title"><strong>Where have you been?</strong><span id="mapSubtitle">Choose a place on the map</span></div>
           <div class="map-time-control" aria-label="Map time period">
-            <button id="mapPeriodPrevious" type="button" aria-label="Previous map period">‹</button>
+            <button id="mapPeriodPrevious" type="button" aria-label="Previous map period"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"></path></svg></button>
             <select id="mapPeriod" aria-label="Show trips from a specific year"><option value="all">All time</option></select>
-            <button id="mapPeriodNext" type="button" aria-label="Next map period">›</button>
+            <button id="mapPeriodNext" type="button" aria-label="Next map period"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"></path></svg></button>
           </div>
         </div>
         <div class="map-header-actions">
@@ -985,9 +987,9 @@
         </div>
       </div>
       <div class="map-controls" aria-label="Map zoom">
-        <button class="map-control" id="zoomIn" type="button" aria-label="Zoom in">+</button>
-        <button class="map-control" id="zoomOut" type="button" aria-label="Zoom out">−</button>
-        <button class="map-control" id="resetZoom" type="button" aria-label="Show the whole map">⌂</button>
+        <button class="map-control" id="zoomIn" type="button" aria-label="Zoom in"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+        <button class="map-control" id="zoomOut" type="button" aria-label="Zoom out"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+        <button class="map-control" id="resetZoom" type="button" aria-label="Show the whole map"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4.5 10 7.5-6 7.5 6v9a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1Z"></path><path d="M9 20v-6h6v6"></path></svg></button>
       </div>
       <div class="status" id="status">Loading the map…</div>
     </section>
@@ -1033,7 +1035,7 @@
   <dialog id="countryDialog" aria-labelledby="dialogTitle">
     <div class="dialog-head">
       <div><h2 id="dialogTitle"></h2><p id="dialogMeta">Add a trip</p></div>
-      <button class="icon-button" id="closeDialog" type="button" aria-label="Close">×</button>
+      <button class="icon-button" id="closeDialog" type="button" aria-label="Close"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
     </div>
     <div class="dialog-body">
       <button class="wishlist-toggle" id="wishlistButton" type="button" aria-pressed="false"><span class="wishlist-star" aria-hidden="true">☆</span><span id="wishlistButtonLabel">Add to wishlist</span></button>
@@ -1059,9 +1061,9 @@
           </div>
           <div class="date-picker-body" id="datePickerBody" hidden>
             <div class="picker-nav">
-              <button class="picker-nav-button" id="pickerPrevious" type="button" aria-label="Previous">‹</button>
+              <button class="picker-nav-button" id="pickerPrevious" type="button" aria-label="Previous"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"></path></svg></button>
               <input class="picker-year-input" id="pickerYearInput" type="text" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="Year">
-              <button class="picker-nav-button" id="pickerNext" type="button" aria-label="Next">›</button>
+              <button class="picker-nav-button" id="pickerNext" type="button" aria-label="Next"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"></path></svg></button>
             </div>
             <p class="picker-help">Type any year, or use the arrows</p>
             <div class="picker-grid" id="pickerOptions"></div>
@@ -1095,7 +1097,7 @@
   <dialog id="shareDialog" aria-labelledby="shareDialogTitle">
     <div class="dialog-head">
       <div><h2 id="shareDialogTitle">Create a share card</h2><p>A private snapshot of your map and totals</p></div>
-      <button class="icon-button" id="closeShareDialog" type="button" aria-label="Close share card">×</button>
+      <button class="icon-button" id="closeShareDialog" type="button" aria-label="Close share card"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
     </div>
     <div class="dialog-body">
       <div class="share-controls">
@@ -1892,7 +1894,7 @@
         const planItems = plans.slice(0, 5).map(plan => ({ id: plan.countryId, detail: `Planned · ${formatVisitDate(plan.date)}` }))
           .concat(someday.slice(0, Math.max(0, 5 - plans.length)).map(id => ({ id, detail: 'Wishlist · Someday' })));
         document.querySelector('#planList').innerHTML = planItems.length ? planItems.map(item => `
-          <button class="plan-item" type="button" data-stats-country="${item.id}"><span class="plan-dot"></span><span class="plan-copy"><strong>${escapeHtml(countryName(item.id))}</strong><span>${escapeHtml(item.detail)}</span></span><span aria-hidden="true">›</span></button>
+          <button class="plan-item" type="button" data-stats-country="${item.id}"><span class="plan-dot"></span><span class="plan-copy"><strong>${escapeHtml(countryName(item.id))}</strong><span>${escapeHtml(item.detail)}</span></span><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"></path></svg></button>
         `).join('') : '<div class="statistics-empty">Your next adventure can start in the Wishlist.</div>';
       }
 
@@ -2165,7 +2167,7 @@
               <span class="country-dot${frequencyClass(visits.length, 'level-')}${visits.length ? '' : isWishlisted(feature.id) ? ' wishlist' : ' unvisited'}"></span>
               <span class="country-copy"><span class="country-name">${escapeHtml(name)}</span><span class="country-date">${escapeHtml(details)}</span></span>
             </button>
-            <button class="country-open" type="button" data-country="${feature.id}" aria-label="Open trips for ${escapeHtml(name)}" title="Open trips">›</button>
+            <button class="country-open" type="button" data-country="${feature.id}" aria-label="Open trips for ${escapeHtml(name)}" title="Open trips"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"></path></svg></button>
           </div>`;
         }).join('');
       }
@@ -2611,6 +2613,6 @@
       });
     })();
   </script>
-  <script type="module" src="./cloud-sync.js?v=20260620-2"></script>
+  <script type="module" src="./cloud-sync.js?v=20260620-3"></script>
 </body>
 </html>
