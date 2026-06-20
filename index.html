@@ -190,7 +190,7 @@
     .progress-copy strong { color: var(--visited); font-size: 10px; }
     .progress-track { height: 5px; overflow: hidden; border-radius: 999px; background: rgba(23,34,31,.08); }
     .progress-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--visited), #48a397); transition: width .45s ease; }
-    .cloud-account { display: flex; min-height: 36px; align-items: center; gap: 8px; padding: 4px 5px; border: 1px solid rgba(255,255,255,.65); border-radius: 999px; background: rgba(255,255,255,.72); backdrop-filter: blur(14px); pointer-events: auto; }
+    .cloud-account { position: relative; display: flex; min-height: 36px; align-items: center; gap: 8px; padding: 4px 5px; border: 1px solid rgba(255,255,255,.65); border-radius: 999px; background: rgba(255,255,255,.72); backdrop-filter: blur(14px); pointer-events: auto; }
     .cloud-account[hidden], .cloud-signed-out[hidden], .cloud-signed-in[hidden] { display: none; }
     .cloud-signed-out, .cloud-signed-in { width: 100%; display: flex; align-items: center; gap: 9px; }
     .google-sign-in { display: flex; min-width: 0; flex: 1; align-items: center; justify-content: center; gap: 7px; min-height: 27px; padding: 5px 9px; border: 0; border-radius: 999px; color: var(--ink); background: rgba(255,255,255,.88); font-size: 10px; font-weight: 650; cursor: pointer; white-space: nowrap; }
@@ -200,9 +200,21 @@
     .cloud-copy strong, .cloud-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cloud-copy strong { font-size: 11px; }
     .cloud-copy span { margin-top: 2px; color: var(--muted); font-size: 9px; }
+    .account-profile { min-width: 0; display: flex; flex: 1; align-items: center; gap: 8px; padding: 0; border: 0; color: inherit; background: transparent; text-align: left; cursor: pointer; }
+    .account-profile:hover .cloud-copy strong, .account-profile:focus-visible .cloud-copy strong { color: var(--visited); }
+    .account-profile:focus-visible { outline: none; }
     .account-initial { display: grid; width: 27px; height: 27px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: white; background: var(--visited); font-size: 11px; font-weight: 750; }
     .cloud-sign-out { flex: 0 0 auto; padding: 6px 8px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font-size: 9px; cursor: pointer; }
     .cloud-sign-out:hover, .cloud-sign-out:focus-visible { color: var(--ink); background: rgba(23,34,31,.06); outline: none; }
+    .account-menu { position: absolute; top: calc(100% + 8px); right: 0; width: min(250px, calc(100vw - 30px)); padding: 13px; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); background: rgba(255,255,255,.96); box-shadow: 0 16px 38px rgba(23,34,31,.16); backdrop-filter: blur(18px); }
+    .account-menu[hidden] { display: none; }
+    .account-menu label { display: block; margin-bottom: 7px; font-size: 10px; font-weight: 720; }
+    .nickname-input { width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: white; font: inherit; font-size: 12px; outline: none; }
+    .nickname-input:focus { border-color: var(--visited); box-shadow: 0 0 0 3px color-mix(in srgb, var(--visited) 12%, transparent); }
+    .account-menu-help { display: block; margin-top: 6px; color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .account-menu-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 11px; }
+    .account-menu-actions button { min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 9px; background: transparent; font-size: 10px; cursor: pointer; }
+    .account-menu-actions .nickname-save { border-color: transparent; color: white; background: var(--visited); font-weight: 700; }
     .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: -3px 0 14px; }
     .quick-action { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 11px; color: var(--muted); background: rgba(255,255,255,.48); font-size: 11px; cursor: pointer; }
     .quick-action:hover, .quick-action:focus-visible, .quick-action.active { color: var(--ink); border-color: color-mix(in srgb, var(--wishlist) 45%, transparent); background: color-mix(in srgb, var(--wishlist) 10%, transparent); outline: none; }
@@ -719,6 +731,8 @@
     html[data-theme="dark"] .list-tool { color-scheme: dark; color: #f0f2f5; background: #252a33; }
     html[data-theme="dark"] .cloud-account { border-color: rgba(255,255,255,.08); background: rgba(27,31,38,.88); }
     html[data-theme="dark"] .google-sign-in { color: #17221f; background: #f6f7f8; }
+    html[data-theme="dark"] .account-menu { background: rgba(30,34,42,.98); box-shadow: 0 18px 42px rgba(0,0,0,.38); }
+    html[data-theme="dark"] .nickname-input { color: var(--ink); background: #252a33; }
     html[data-theme="dark"] .quick-action { background: rgba(255,255,255,.045); }
     html[data-theme="dark"] .list-tool option { color: #f0f2f5; background: #252a33; }
     html[data-theme="dark"] .progress-track { background: rgba(255,255,255,.09); }
@@ -955,10 +969,21 @@
               <button class="google-sign-in" id="googleSignIn" type="button"><span class="google-mark" aria-hidden="true">G</span> Sign in to sync</button>
             </div>
             <div class="cloud-signed-in" id="cloudSignedIn" hidden>
-              <span class="account-initial" id="accountInitial" aria-hidden="true">G</span>
-              <span class="cloud-copy"><strong id="accountName">Google account</strong><span id="cloudStatus">Cloud sync ready</span></span>
+              <button class="account-profile" id="accountProfileButton" type="button" aria-expanded="false" aria-controls="accountMenu" title="Edit profile">
+                <span class="account-initial" id="accountInitial" aria-hidden="true">G</span>
+                <span class="cloud-copy"><strong id="accountName">Google account</strong><span id="cloudStatus">Cloud sync ready</span></span>
+              </button>
               <button class="cloud-sign-out" id="googleSignOut" type="button">Sign out</button>
             </div>
+            <form class="account-menu" id="accountMenu" hidden>
+              <label for="nicknameInput">Display name</label>
+              <input class="nickname-input" id="nicknameInput" type="text" maxlength="30" autocomplete="nickname" placeholder="Your travel name">
+              <span class="account-menu-help">Leave empty to use your Google account name.</span>
+              <div class="account-menu-actions">
+                <button id="cancelNickname" type="button">Cancel</button>
+                <button class="nickname-save" type="submit">Save</button>
+              </div>
+            </form>
           </section>
         </div>
       </div>

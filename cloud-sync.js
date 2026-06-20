@@ -8,6 +8,10 @@ const signOutButton = document.querySelector('#googleSignOut');
 const accountName = document.querySelector('#accountName');
 const accountInitial = document.querySelector('#accountInitial');
 const syncStatus = document.querySelector('#cloudStatus');
+const accountProfileButton = document.querySelector('#accountProfileButton');
+const accountMenu = document.querySelector('#accountMenu');
+const nicknameInput = document.querySelector('#nicknameInput');
+const cancelNickname = document.querySelector('#cancelNickname');
 
 const ACTIVE_ACCOUNT_KEY = 'travel-atlas-active-account';
 const ANONYMOUS_STATE_KEY = 'travel-atlas-anonymous-v1';
@@ -18,6 +22,7 @@ let bridge;
 let auth;
 let database;
 let currentUser = null;
+let currentProfile = { nickname: '' };
 let unsubscribeRemote = null;
 let syncTimer = null;
 let syncInFlight = false;
@@ -29,6 +34,24 @@ const clone = value => structuredClone(value);
 const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const accountStateKey = uid => `travel-atlas-account:${uid}`;
 const accountBaseKey = uid => `travel-atlas-sync-base:${uid}`;
+const accountProfileKey = uid => `travel-atlas-profile:${uid}`;
+const accountProfileDirtyKey = uid => `travel-atlas-profile-dirty:${uid}`;
+
+function normalizeProfile(input) {
+  const nickname = typeof input?.nickname === 'string'
+    ? input.nickname.trim().replace(/\s+/g, ' ').slice(0, 30)
+    : '';
+  return { nickname };
+}
+
+function readProfile(uid) {
+  try { return normalizeProfile(JSON.parse(localStorage.getItem(accountProfileKey(uid)))); }
+  catch { return { nickname: '' }; }
+}
+
+function writeProfile(uid, profile) {
+  localStorage.setItem(accountProfileKey(uid), JSON.stringify(normalizeProfile(profile)));
+}
 
 function inferPrecision(date) {
   if (!date) return 'none';
@@ -218,6 +241,7 @@ function mergeStates(baseInput, localInput, remoteInput) {
 }
 
 function setSignedOutUi() {
+  setAccountMenuOpen(false);
   panel.hidden = false;
   signedOutView.hidden = false;
   signedInView.hidden = true;
@@ -229,10 +253,22 @@ function setSignedInUi(user, status = 'Connecting to cloud…') {
   panel.hidden = false;
   signedOutView.hidden = true;
   signedInView.hidden = false;
-  const label = user.displayName || user.email || 'Google account';
+  const label = currentProfile.nickname || user.displayName || user.email || 'Google account';
   accountName.textContent = label;
   accountInitial.textContent = label.trim().charAt(0).toUpperCase() || 'G';
   syncStatus.textContent = status;
+}
+
+function setAccountMenuOpen(open) {
+  accountMenu.hidden = !open;
+  accountProfileButton.setAttribute('aria-expanded', String(open));
+  if (open) {
+    nicknameInput.value = currentProfile.nickname;
+    requestAnimationFrame(() => {
+      nicknameInput.focus();
+      nicknameInput.select();
+    });
+  }
 }
 
 function setStatus(message) {
@@ -279,25 +315,34 @@ async function syncNow() {
   setStatus(navigator.onLine ? 'Syncing…' : 'Offline · saved on this device');
   try {
     const reference = firestoreApi.doc(database, 'users', user.uid);
-    const merged = await firestoreApi.runTransaction(database, async transaction => {
+    const result = await firestoreApi.runTransaction(database, async transaction => {
       const snapshot = await transaction.get(reference);
       const remote = snapshot.exists() ? normalizeState(snapshot.data().state) : normalizeState(EMPTY_STATE);
+      const remoteProfile = normalizeProfile(snapshot.exists() ? snapshot.data().profile : null);
+      const profileDirty = localStorage.getItem(accountProfileDirtyKey(user.uid)) === 'true';
+      const profile = profileDirty ? readProfile(user.uid) : remoteProfile;
       const base = readState(accountBaseKey(user.uid));
       const local = normalizeState(bridge.getState());
       const next = mergeStates(base, local, remote);
-      if (!snapshot.exists() || !same(next, remote)) {
-        transaction.set(reference, {
+      if (!snapshot.exists() || !same(next, remote) || profileDirty) {
+        const payload = {
           schemaVersion: 2,
           state: next,
           updatedAt: firestoreApi.serverTimestamp()
-        });
+        };
+        if (profileDirty || snapshot.data()?.profile) payload.profile = profile;
+        transaction.set(reference, payload, { merge: true });
       }
-      return next;
+      return { state: next, profile };
     });
     if (currentUser?.uid !== user.uid) return;
-    if (!same(normalizeState(bridge.getState()), merged)) bridge.applyState(merged);
-    writeState(accountBaseKey(user.uid), merged);
-    writeState(accountStateKey(user.uid), merged);
+    if (!same(normalizeState(bridge.getState()), result.state)) bridge.applyState(result.state);
+    writeState(accountBaseKey(user.uid), result.state);
+    writeState(accountStateKey(user.uid), result.state);
+    currentProfile = result.profile;
+    writeProfile(user.uid, currentProfile);
+    localStorage.removeItem(accountProfileDirtyKey(user.uid));
+    setSignedInUi(user, 'Synced just now');
     setStatus('Synced just now');
   } catch (error) {
     console.error('Cloud sync failed:', error);
@@ -329,6 +374,7 @@ async function activateUser(user) {
 
   localStorage.setItem(ACTIVE_ACCOUNT_KEY, user.uid);
   currentUser = user;
+  currentProfile = readProfile(user.uid);
   bridge.applyState(localState);
   writeState(accountStateKey(user.uid), localState);
   setSignedInUi(user);
@@ -341,6 +387,14 @@ async function activateUser(user) {
     if (!snapshot.exists() || currentUser?.uid !== user.uid) return;
     const remote = normalizeState(snapshot.data().state);
     const base = readState(accountBaseKey(user.uid));
+    if (localStorage.getItem(accountProfileDirtyKey(user.uid)) !== 'true') {
+      const remoteProfile = normalizeProfile(snapshot.data().profile);
+      if (!same(remoteProfile, currentProfile)) {
+        currentProfile = remoteProfile;
+        writeProfile(user.uid, currentProfile);
+        setSignedInUi(user, syncStatus.textContent);
+      }
+    }
     if (!same(remote, base)) queueSync(80);
   }, error => {
     console.error('Cloud listener failed:', error);
@@ -354,6 +408,7 @@ function deactivateUser() {
   unsubscribeRemote = null;
   const previousUid = localStorage.getItem(ACTIVE_ACCOUNT_KEY);
   currentUser = null;
+  currentProfile = { nickname: '' };
   if (previousUid) {
     writeState(accountStateKey(previousUid), bridge.getState());
     localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
@@ -401,6 +456,24 @@ async function initializeCloudSync() {
       }
     });
     signOutButton.addEventListener('click', () => authApi.signOut(auth));
+    accountProfileButton.addEventListener('click', () => setAccountMenuOpen(accountMenu.hidden));
+    cancelNickname.addEventListener('click', () => setAccountMenuOpen(false));
+    accountMenu.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!currentUser) return;
+      currentProfile = normalizeProfile({ nickname: nicknameInput.value });
+      writeProfile(currentUser.uid, currentProfile);
+      localStorage.setItem(accountProfileDirtyKey(currentUser.uid), 'true');
+      setSignedInUi(currentUser, 'Saving profile…');
+      setAccountMenuOpen(false);
+      await syncNow();
+    });
+    document.addEventListener('click', event => {
+      if (!accountMenu.hidden && !panel.contains(event.target)) setAccountMenuOpen(false);
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !accountMenu.hidden) setAccountMenuOpen(false);
+    });
 
     window.addEventListener('travel-atlas:state-changed', () => {
       if (currentUser) {
