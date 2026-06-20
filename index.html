@@ -190,17 +190,17 @@
     .progress-copy strong { color: var(--visited); font-size: 10px; }
     .progress-track { height: 5px; overflow: hidden; border-radius: 999px; background: rgba(23,34,31,.08); }
     .progress-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--visited), #48a397); transition: width .45s ease; }
-    .cloud-account { display: flex; min-height: 46px; align-items: center; gap: 10px; margin: -2px 0 14px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.5); }
+    .cloud-account { display: flex; min-height: 36px; align-items: center; gap: 8px; padding: 4px 5px; border: 1px solid rgba(255,255,255,.65); border-radius: 999px; background: rgba(255,255,255,.72); backdrop-filter: blur(14px); pointer-events: auto; }
     .cloud-account[hidden], .cloud-signed-out[hidden], .cloud-signed-in[hidden] { display: none; }
     .cloud-signed-out, .cloud-signed-in { width: 100%; display: flex; align-items: center; gap: 9px; }
-    .google-sign-in { display: flex; min-width: 0; flex: 1; align-items: center; justify-content: center; gap: 8px; min-height: 31px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: white; font-size: 11px; font-weight: 650; cursor: pointer; }
+    .google-sign-in { display: flex; min-width: 0; flex: 1; align-items: center; justify-content: center; gap: 7px; min-height: 27px; padding: 5px 9px; border: 0; border-radius: 999px; color: var(--ink); background: rgba(255,255,255,.88); font-size: 10px; font-weight: 650; cursor: pointer; white-space: nowrap; }
     .google-sign-in:hover, .google-sign-in:focus-visible { border-color: color-mix(in srgb, var(--visited) 55%, transparent); outline: none; }
     .google-mark { display: grid; width: 18px; height: 18px; place-items: center; border-radius: 50%; color: #4285f4; background: #f6f8fb; font-size: 12px; font-weight: 800; }
     .cloud-copy { min-width: 0; flex: 1; }
     .cloud-copy strong, .cloud-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cloud-copy strong { font-size: 11px; }
     .cloud-copy span { margin-top: 2px; color: var(--muted); font-size: 9px; }
-    .account-initial { display: grid; width: 29px; height: 29px; flex: 0 0 auto; place-items: center; border-radius: 9px; color: white; background: var(--visited); font-size: 12px; font-weight: 750; }
+    .account-initial { display: grid; width: 27px; height: 27px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: white; background: var(--visited); font-size: 11px; font-weight: 750; }
     .cloud-sign-out { flex: 0 0 auto; padding: 6px 8px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font-size: 9px; cursor: pointer; }
     .cloud-sign-out:hover, .cloud-sign-out:focus-visible { color: var(--ink); background: rgba(23,34,31,.06); outline: none; }
     .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: -3px 0 14px; }
@@ -717,7 +717,7 @@
     html[data-theme="dark"] .search,
     html[data-theme="dark"] .soft-button,
     html[data-theme="dark"] .list-tool { color-scheme: dark; color: #f0f2f5; background: #252a33; }
-    html[data-theme="dark"] .cloud-account { background: rgba(255,255,255,.035); }
+    html[data-theme="dark"] .cloud-account { border-color: rgba(255,255,255,.08); background: rgba(27,31,38,.88); }
     html[data-theme="dark"] .google-sign-in { color: #17221f; background: #f6f7f8; }
     html[data-theme="dark"] .quick-action { background: rgba(255,255,255,.045); }
     html[data-theme="dark"] .list-tool option { color: #f0f2f5; background: #252a33; }
@@ -792,6 +792,7 @@
       .country-list { max-height: 180px; }
       .map-shell { min-height: 520px; }
       .map-header { top: 15px; left: 15px; right: 15px; }
+      .map-header-actions { align-items: flex-end; flex-direction: column; }
       .legend { display: none; }
       .map-controls { right: 14px; bottom: 14px; }
       .statistics-view { padding: 10px; }
@@ -804,6 +805,8 @@
     }
 
     @media (max-width: 480px) {
+      .cloud-copy { display: none; }
+      .marker-toggle > span:last-child { display: none; }
       .stats { grid-template-columns: repeat(2, 1fr); }
       .dialog-head, .dialog-body { padding-left: 20px; padding-right: 20px; }
       .statistics-header { display: block; }
@@ -884,16 +887,6 @@
         <div class="progress-copy"><span id="progressLabel">0 of 0 mapped places</span><strong id="progressPercent">0%</strong></div>
         <div class="progress-track"><span class="progress-fill" id="progressFill"></span></div>
       </div>
-      <section class="cloud-account" id="cloudAccount" aria-label="Cloud account" hidden>
-        <div class="cloud-signed-out" id="cloudSignedOut">
-          <button class="google-sign-in" id="googleSignIn" type="button"><span class="google-mark" aria-hidden="true">G</span> Sign in to sync</button>
-        </div>
-        <div class="cloud-signed-in" id="cloudSignedIn" hidden>
-          <span class="account-initial" id="accountInitial" aria-hidden="true">G</span>
-          <span class="cloud-copy"><strong id="accountName">Google account</strong><span id="cloudStatus">Cloud sync ready</span></span>
-          <button class="cloud-sign-out" id="googleSignOut" type="button">Sign out</button>
-        </div>
-      </section>
       <div class="quick-actions">
         <button class="quick-action" id="openStatistics" type="button"><span aria-hidden="true">▥</span> Statistics</button>
         <button class="quick-action" id="openShareCardMain" type="button"><span aria-hidden="true">↗</span> Share card</button>
@@ -957,6 +950,16 @@
             <span class="toggle-track" aria-hidden="true"></span>
             <span>Small places</span>
           </label>
+          <section class="cloud-account" id="cloudAccount" aria-label="Cloud account" hidden>
+            <div class="cloud-signed-out" id="cloudSignedOut">
+              <button class="google-sign-in" id="googleSignIn" type="button"><span class="google-mark" aria-hidden="true">G</span> Sign in to sync</button>
+            </div>
+            <div class="cloud-signed-in" id="cloudSignedIn" hidden>
+              <span class="account-initial" id="accountInitial" aria-hidden="true">G</span>
+              <span class="cloud-copy"><strong id="accountName">Google account</strong><span id="cloudStatus">Cloud sync ready</span></span>
+              <button class="cloud-sign-out" id="googleSignOut" type="button">Sign out</button>
+            </div>
+          </section>
         </div>
       </div>
       <div class="map-controls" aria-label="Map zoom">

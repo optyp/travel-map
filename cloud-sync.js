@@ -251,7 +251,7 @@ function friendlyAuthError(error) {
     'auth/web-storage-unsupported': 'This browser blocks the storage required for sign-in'
   };
   const code = error?.code || 'unknown-error';
-  return `${messages[code] || 'Google sign-in could not be completed'} (${code})`;
+  return messages[code] || 'Google sign-in could not be completed';
 }
 
 async function waitForApp() {
