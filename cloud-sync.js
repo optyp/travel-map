@@ -410,8 +410,6 @@ async function initializeCloudSync() {
     auth = authApi.getAuth(app);
     database = firestoreApi.getFirestore(app);
     await authApi.setPersistence(auth, authApi.browserLocalPersistence);
-    await authApi.getRedirectResult(auth).catch(error => console.error('Google redirect sign-in failed:', error));
-
     const provider = new authApi.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     signInButton.addEventListener('click', async () => {
@@ -421,7 +419,8 @@ async function initializeCloudSync() {
         await authApi.signInWithPopup(auth, provider);
       } catch (error) {
         if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment'].includes(error.code)) {
-          await authApi.signInWithRedirect(auth, provider);
+          bridge.notify('Google sign-in is not supported in this in-app browser. Open the site in Chrome, Edge or Safari.', 'error');
+          setSignedOutUi();
           return;
         }
         console.error('Google sign-in failed:', error);
