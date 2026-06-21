@@ -348,6 +348,8 @@
       cursor: pointer;
     }
     .soft-button:hover { background: white; }
+    .soft-button:disabled { opacity: .45; cursor: not-allowed; }
+    .soft-button:disabled:hover { background: rgba(255,255,255,.6); }
 
     .map-shell { position: relative; min-width: 0; overflow: hidden; border-color: rgba(23,34,31,.13); background: var(--map-area); isolation: isolate; }
     .map-shell::before {
@@ -728,9 +730,11 @@
     .plan-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--wishlist); }
     .plans-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
     .plans-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
-    .plan-metric { padding: 13px; border-radius: 13px; background: color-mix(in srgb, var(--wishlist) 8%, transparent); }
-    .plan-metric strong { display: block; padding-bottom: 1px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 22px; font-weight: 650; font-variant-numeric: lining-nums tabular-nums; line-height: 1.12; }
-    .plan-metric span { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
+    .plan-metric { min-height: 92px; display: flex; flex-direction: column; justify-content: center; padding: 16px; border-radius: 13px; background: color-mix(in srgb, var(--wishlist) 8%, transparent); }
+    .plan-metric strong { display: block; padding-bottom: 1px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 24px; font-weight: 650; font-variant-numeric: lining-nums tabular-nums; line-height: 1.08; }
+    .plan-metric span { display: block; margin-top: 6px; color: var(--muted); font-size: 10px; }
+    .plan-list.empty { margin-top: 0; place-items: center; }
+    .plan-list.empty .statistics-empty { max-width: 300px; padding: 24px; line-height: 1.5; }
     .statistics-empty { padding: 22px 8px; color: var(--muted); font-size: 11px; text-align: center; }
 
     #shareDialog { width: min(900px, calc(100% - 28px)); }
@@ -777,6 +781,7 @@
     html[data-theme="dark"] .home-button:hover,
     html[data-theme="dark"] .home-button:focus-visible,
     html[data-theme="dark"] .soft-button:hover { background: rgba(255,255,255,.085); }
+    html[data-theme="dark"] .soft-button:disabled:hover { background: #252a33; }
     html[data-theme="dark"] .home-picker { background: #242831; box-shadow: 0 14px 34px rgba(0,0,0,.32); }
     html[data-theme="dark"] .home-search,
     html[data-theme="dark"] input[type="text"] { color: var(--ink); background: #1c2027; }
@@ -867,6 +872,7 @@
       .statistics-period { width: 100%; }
       .continent-grid, .pattern-grid { grid-template-columns: 1fr; }
       .plans-summary { grid-template-columns: 1fr; }
+      .plan-metric { min-height: 70px; }
       .share-controls { grid-template-columns: 1fr; }
       .share-actions { display: grid; grid-template-columns: 1fr 1fr; }
       .share-actions button:last-child:nth-child(odd) { grid-column: 1 / -1; }
@@ -1982,6 +1988,9 @@
         ].filter(id => !isHome(id))).size;
         document.querySelector('#wishlistCount').textContent = wishlistCount;
         document.querySelector('#showWishlist').classList.toggle('active', showWishlistOnly);
+        const resetButton = document.querySelector('#resetButton');
+        resetButton.textContent = showWishlistOnly ? 'Clear wishlist' : 'Clear all';
+        resetButton.disabled = showWishlistOnly && !wishlistIds().some(id => !isHome(id));
 
         const allVisits = entries.flatMap(([, value]) => value.visits);
         const years = [...new Set(allVisits.map(visit => visit.date?.slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a));
@@ -2133,7 +2142,9 @@
         ].map(([value, label]) => `<div class="plan-metric"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`).join('');
         const planItems = plans.slice(0, 5).map(plan => ({ id: plan.countryId, detail: `Planned · ${formatVisitDate(plan.date)}` }))
           .concat(someday.slice(0, Math.max(0, 5 - plans.length)).map(id => ({ id, detail: 'Wishlist · Someday' })));
-        document.querySelector('#planList').innerHTML = planItems.length ? planItems.map(item => `
+        const planList = document.querySelector('#planList');
+        planList.classList.toggle('empty', !planItems.length);
+        planList.innerHTML = planItems.length ? planItems.map(item => `
           <button class="plan-item" type="button" data-stats-country="${item.id}"><span class="plan-dot"></span><span class="plan-copy"><strong>${escapeHtml(countryName(item.id))}</strong><span>${escapeHtml(item.detail)}</span></span><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"></path></svg></button>
         `).join('') : '<div class="statistics-empty">Your next adventure can start in the Wishlist.</div>';
       }
@@ -2808,6 +2819,15 @@
       });
 
       document.querySelector('#resetButton').addEventListener('click', () => {
+        if (showWishlistOnly) {
+          const wishlistCount = wishlistIds().filter(id => !isHome(id)).length;
+          if (!wishlistCount || !confirm(`Remove ${wishlistCount} wishlist ${englishPlural(wishlistCount, 'place')}? Planned trips will stay.`)) return;
+          state.wishlist = [];
+          const hasPlans = Object.keys(state.countries).some(hasPlannedTrip);
+          persistState();
+          showToast(hasPlans ? 'Wishlist cleared · Planned trips kept' : 'Wishlist cleared');
+          return;
+        }
         if (!Object.keys(state.countries).length || !confirm('Delete all saved trips? This cannot be undone.')) return;
         state = { version: 2, countries: {}, homeCountryId: state.homeCountryId, wishlist: wishlistIds() };
         persistState();
