@@ -197,13 +197,13 @@
     .google-sign-in:hover, .google-sign-in:focus-visible { border-color: color-mix(in srgb, var(--visited) 55%, transparent); outline: none; }
     .google-mark { display: grid; width: 18px; height: 18px; place-items: center; border-radius: 50%; color: #4285f4; background: #f6f8fb; font-size: 12px; font-weight: 800; }
     .cloud-copy { min-width: 0; flex: 1; }
-    .cloud-copy strong, .cloud-copy span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .cloud-copy strong { font-size: 11px; }
-    .cloud-copy span { margin-top: 2px; color: var(--muted); font-size: 9px; }
+    .cloud-copy > span { display: block; overflow: hidden; margin-top: 2px; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .cloud-copy > span:empty { display: none; }
     .account-name-button { max-width: 100%; display: block; overflow: hidden; padding: 0; border: 0; color: inherit; background: transparent; font: inherit; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
     .account-name-button:hover, .account-name-button:focus-visible { color: var(--visited); outline: none; text-decoration: underline; text-underline-offset: 2px; }
     .account-initial { display: grid; width: 27px; height: 27px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: white; background: var(--visited); font-size: 11px; font-weight: 750; }
-    .cloud-sign-out { flex: 0 0 auto; padding: 6px 8px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font-size: 9px; cursor: pointer; }
+    .cloud-sign-out { width: 29px; height: 29px; display: grid; flex: 0 0 auto; place-items: center; padding: 0; border: 0; border-radius: 9px; color: var(--muted); background: transparent; line-height: 0; cursor: pointer; }
+    .cloud-sign-out .button-icon { width: 15px; height: 15px; }
     .cloud-sign-out:hover, .cloud-sign-out:focus-visible { color: var(--ink); background: rgba(23,34,31,.06); outline: none; }
     .account-menu { position: absolute; top: calc(100% + 8px); right: 0; width: min(250px, calc(100vw - 30px)); padding: 13px; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); background: rgba(255,255,255,.96); box-shadow: 0 16px 38px rgba(23,34,31,.16); backdrop-filter: blur(18px); }
     .account-menu[hidden] { display: none; }
@@ -287,6 +287,7 @@
     .list-tool:hover, .list-tool:focus-visible { color: var(--ink); border-color: rgba(38,124,112,.35); }
     .list-tool:disabled { opacity: .48; cursor: not-allowed; }
     .list-tool option { color: var(--ink); background: white; }
+    #yearFilter { padding-top: 1px; }
     .country-list { min-height: 0; flex: 1; overflow: auto; margin: 0 -8px; padding: 0 8px 8px; scrollbar-width: thin; }
     .empty-list { padding: 28px 10px; color: var(--muted); text-align: center; font-size: 13px; line-height: 1.5; }
     .country-item {
@@ -378,6 +379,7 @@
     .place-marker.home .marker-ring { fill: var(--home); stroke: white; stroke-width: 1.4; r: 4.2px; filter: drop-shadow(0 1px 2px rgba(23,34,31,.25)); }
     .place-marker.home:hover .marker-ring, .place-marker.home:focus-visible .marker-ring { fill: var(--home-hover); }
     .place-marker.selected .marker-ring { stroke: var(--accent); stroke-width: 2; }
+    .map-shell.timeline-active .timeline-wishlist-legend { display: none; }
 
     .map-header {
       position: absolute;
@@ -390,13 +392,21 @@
       gap: 16px;
       pointer-events: none;
     }
-    .map-title { padding: 11px 14px; border: 1px solid rgba(255,255,255,.65); border-radius: 14px; background: rgba(255,255,255,.72); backdrop-filter: blur(14px); }
+    .map-title { width: 210px; height: 68px; padding: 11px 14px; border: 1px solid rgba(255,255,255,.65); border-radius: 14px; background: rgba(255,255,255,.72); backdrop-filter: blur(14px); }
     .map-title strong { display: block; font-family: Georgia, serif; font-size: 18px; font-weight: 500; }
     .map-title span { color: var(--muted); font-size: 11px; }
     .map-heading { display: grid; justify-items: start; gap: 7px; pointer-events: auto; }
     .map-time-control { display: flex; align-items: center; overflow: hidden; border: 1px solid rgba(255,255,255,.65); border-radius: 999px; color: var(--muted); background: rgba(255,255,255,.72); backdrop-filter: blur(14px); }
     .map-time-control button { width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; color: inherit; background: transparent; cursor: pointer; }
     .map-time-control button:hover { color: var(--ink); background: rgba(38,124,112,.08); }
+    .map-time-control .timeline-toggle { width: 34px; border-right: 1px solid rgba(23,34,31,.08); border-radius: 0; }
+    .timeline-toggle.playing { color: var(--visited); background: color-mix(in srgb, var(--visited) 10%, transparent); }
+    .timeline-toggle:disabled { opacity: .4; cursor: not-allowed; }
+    .timeline-toggle:disabled:hover { color: inherit; background: transparent; }
+    .timeline-toggle .timeline-play-icon { fill: currentColor; stroke: none; }
+    .timeline-toggle .timeline-pause-icon { display: none; }
+    .timeline-toggle.playing .timeline-play-icon { display: none; }
+    .timeline-toggle.playing .timeline-pause-icon { display: block; }
     .map-time-control select { height: 30px; padding: 0 5px; border: 0; color: var(--ink); background: transparent; font-size: 10px; font-weight: 680; outline: none; cursor: pointer; }
     .map-time-control option { color: var(--ink); background: white; }
     .legend { display: flex; align-items: center; gap: 11px; padding: 9px 12px; border-radius: 999px; background: rgba(255,255,255,.72); color: var(--muted); font-size: 11px; backdrop-filter: blur(14px); }
@@ -439,10 +449,12 @@
 
     .map-controls { position: absolute; right: 22px; bottom: 22px; display: grid; gap: 8px; }
     .map-control {
+      appearance: none;
       display: grid;
       width: 42px;
       height: 42px;
       place-items: center;
+      padding: 0;
       border: 1px solid rgba(255,255,255,.8);
       border-radius: 13px;
       background: rgba(255,255,255,.78);
@@ -452,7 +464,7 @@
       backdrop-filter: blur(12px);
     }
     .button-icon { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
-    .map-control .button-icon { width: 17px; height: 17px; }
+    .map-control .button-icon { width: 16px; height: 16px; }
     .map-control:hover { background: white; }
 
     .tooltip {
@@ -485,6 +497,7 @@
       box-shadow: 0 34px 100px rgba(20,31,28,.3);
     }
     dialog::backdrop { background: rgba(20,31,28,.45); backdrop-filter: blur(5px); }
+    #countryDialog[open] { position: fixed; inset: max(14px, calc(50% - 320px)) 0 auto; margin: 0 auto; }
     .dialog-head { display: flex; justify-content: space-between; gap: 18px; padding: 25px 26px 18px; border-bottom: 1px solid var(--line); }
     .dialog-head h2 { margin: 0; font-family: Georgia, serif; font-size: 28px; font-weight: 500; }
     .dialog-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
@@ -751,12 +764,14 @@
     html[data-theme="dark"] .place-marker.home .marker-ring { fill: var(--home); stroke: #1b2027; }
     html[data-theme="dark"] .map-title,
     html[data-theme="dark"] .legend,
-    html[data-theme="dark"] .marker-toggle,
-    html[data-theme="dark"] .map-control,
+    html[data-theme="dark"] .marker-toggle { border-color: rgba(255,255,255,.08); background: rgba(27,31,39,.86); }
+    html[data-theme="dark"] .map-control { border-color: rgba(255,255,255,.08); background: rgba(27,31,39,.86); box-shadow: none; }
     html[data-theme="dark"] .map-time-control { border-color: rgba(255,255,255,.08); background: rgba(27,31,39,.86); }
+    html[data-theme="dark"] .map-time-control .timeline-toggle { border-right-color: rgba(255,255,255,.08); }
     html[data-theme="dark"] .map-time-control select,
     html[data-theme="dark"] .map-time-control option { color-scheme: dark; color: #f0f2f5; background: #252a33; }
-    html[data-theme="dark"] .map-control:hover { background: #303641; }
+    html[data-theme="dark"] .map-control:hover,
+    html[data-theme="dark"] .map-control:focus-visible { background: rgba(255,255,255,.07); }
     html[data-theme="dark"] .toggle-track { background: #59616d; }
     html[data-theme="dark"] .toggle-track::after { background: #e9efec; }
     html[data-theme="dark"] dialog { background: #1a1e25; box-shadow: 0 34px 100px rgba(0,0,0,.55); }
@@ -873,7 +888,7 @@
       .map-controls { right: 12px; bottom: 12px; }
     }
 
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
   </style>
 </head>
 <body>
@@ -947,6 +962,7 @@
         <div class="map-heading">
           <div class="map-title"><strong>Where have you been?</strong><span id="mapSubtitle">Choose a place on the map</span></div>
           <div class="map-time-control" aria-label="Map time period">
+            <button class="timeline-toggle" id="mapTimelineToggle" type="button" aria-label="Play travel history" aria-pressed="false" title="Play travel history"><svg class="button-icon timeline-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"></path></svg><svg class="button-icon timeline-pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7v10M15 7v10"></path></svg></button>
             <button id="mapPeriodPrevious" type="button" aria-label="Previous map period"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"></path></svg></button>
             <select id="mapPeriod" aria-label="Show trips from a specific year"><option value="all">All time</option></select>
             <button id="mapPeriodNext" type="button" aria-label="Next map period"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"></path></svg></button>
@@ -955,7 +971,7 @@
         <div class="map-header-actions">
           <div class="legend">
             <span class="legend-item"><span class="legend-dot"></span> <span id="visitedLegendLabel">Visited</span></span>
-            <span class="legend-item"><span class="legend-dot wishlist"></span> Wishlist</span>
+            <span class="legend-item timeline-wishlist-legend"><span class="legend-dot wishlist"></span> Wishlist</span>
             <span class="legend-item"><span class="legend-dot home"></span> Home</span>
             <span class="legend-divider" aria-hidden="true"></span>
             <span class="intensity-scale" title="More trips use a deeper colour"><small>Trips 1–20+</small><span class="intensity-step"></span><span class="intensity-step"></span><span class="intensity-step"></span><span class="intensity-step"></span><span class="intensity-step"></span><span class="intensity-step"></span></span>
@@ -971,8 +987,8 @@
             </div>
             <div class="cloud-signed-in" id="cloudSignedIn" hidden>
               <span class="account-initial" id="accountInitial" aria-hidden="true">G</span>
-              <span class="cloud-copy"><button class="account-name-button" id="accountProfileButton" type="button" aria-expanded="false" aria-controls="accountMenu" title="Edit nickname"><span id="accountName">Google account</span></button><span id="cloudStatus">Cloud sync ready</span></span>
-              <button class="cloud-sign-out" id="googleSignOut" type="button">Sign out</button>
+              <span class="cloud-copy"><button class="account-name-button" id="accountProfileButton" type="button" aria-expanded="false" aria-controls="accountMenu" title="Edit nickname"><span id="accountName">Google account</span></button><span id="cloudStatus"></span></span>
+              <button class="cloud-sign-out" id="googleSignOut" type="button" aria-label="Sign out" title="Sign out"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10"></path><path d="M13 8l4 4-4 4M17 12H9"></path></svg></button>
             </div>
             <form class="account-menu" id="accountMenu" hidden>
               <label for="nicknameInput">Display name</label>
@@ -1200,6 +1216,13 @@
       let historyOrder = 'newest';
       let mapPeriod = 'all';
       let availableMapPeriods = ['all'];
+      let timelineActive = false;
+      let timelinePlaying = false;
+      let timelineFrames = [];
+      let timelineIndex = -1;
+      let timelineFrame = null;
+      let timelineTimer = null;
+      let timelineVisibleCounts = new Map();
       let statisticsPeriod = 'all';
       let pendingMapAction = null;
       let shareTitleCustomized = false;
@@ -1240,6 +1263,7 @@
       }
 
       function persistState({ renderDialogHistory = false } = {}) {
+        if (timelineActive) exitTimeline();
         saveState();
         if (renderDialogHistory) renderHistory();
         if (dialog.open && selectedId) renderWishlistButton();
@@ -1251,6 +1275,7 @@
         ready: false,
         getState: () => structuredClone(state),
         applyState(nextState) {
+          if (timelineActive) exitTimeline();
           state = structuredClone(nextState);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           if (dialog.open && selectedId) {
@@ -1416,10 +1441,15 @@
       function plannedVisitsFor(id) { return visitsFor(id).filter(isFutureVisit); }
       function mapVisitsFor(id) {
         const visits = completedVisitsFor(id);
+        if (timelineActive) return visits.filter(visit => {
+          const frame = timelineFrameForVisit(visit);
+          return frame && frame.order <= timelineFrame.order;
+        });
         if (mapPeriod === 'all') return visits;
         return visits.filter(visit => mapPeriod === 'unknown' ? !visit.date : visit.date?.startsWith(mapPeriod));
       }
       function mapPlannedVisitsFor(id) {
+        if (timelineActive) return [];
         const visits = plannedVisitsFor(id);
         if (mapPeriod === 'all') return visits;
         if (mapPeriod === 'unknown') return [];
@@ -1431,6 +1461,7 @@
       function hasPlannedTrip(id) { return plannedVisitsFor(id).length > 0; }
       function isWishlisted(id) { return isExplicitlyWishlisted(id) || hasPlannedTrip(id); }
       function mapWishlistVisible(id) {
+        if (timelineActive) return false;
         if (mapPeriod === 'all') return isWishlisted(id);
         if (mapPeriod === 'unknown') return isExplicitlyWishlisted(id);
         return mapPlannedVisitsFor(id).length > 0;
@@ -1442,7 +1473,7 @@
       }
       function markerIsHidden(id) { return !showSmallPlaces && !mapVisitsFor(id).length && !isHome(id) && !mapWishlistVisible(id); }
       function placeAriaLabel(place) {
-        const visitedLabel = mapVisitsFor(place.id).length ? (mapPeriod === 'all' ? ', visited' : ', visited in selected period') : '';
+        const visitedLabel = mapVisitsFor(place.id).length ? (timelineActive ? `, visited by ${timelineFrame.label}` : mapPeriod === 'all' ? ', visited' : ', visited in selected period') : '';
         const plannedLabel = mapPlannedVisitsFor(place.id).length ? ', planned trip' : mapWishlistVisible(place.id) ? ', on wishlist' : '';
         return `${countryName(place)}${isHome(place.id) ? ', home country' : ''}${visitedLabel}${plannedLabel}`;
       }
@@ -1602,7 +1633,7 @@
         if (plans.length) details.push(`Planned · ${formatVisitDate(plans[0].date)}`);
         else if (mapWishlistVisible(feature.id)) details.push('Wishlist');
         if (visits.length) details.push(`${visits.length} ${englishPlural(visits.length, 'trip')} · ${formatVisitDate(visits[0].date)}`);
-        else if (!plans.length && mapPeriod !== 'all' && visitsFor(feature.id).length) details.push('No trips in this period');
+        else if (!plans.length && (timelineActive || mapPeriod !== 'all') && visitsFor(feature.id).length) details.push(timelineActive ? `No trips by ${timelineFrame.label}` : 'No trips in this period');
         else if (!plans.length) details.push('Click to add a trip');
         tooltip.innerHTML = `<strong>${escapeHtml(countryName(feature))}</strong><small>${escapeHtml(details.join(' · '))}</small>`;
         tooltip.style.left = `${Math.min(event.clientX, innerWidth - 230)}px`;
@@ -1613,6 +1644,7 @@
       function hideTooltip() { tooltip.classList.remove('show'); }
 
       function openCountry(id) {
+        if (timelinePlaying) pauseTimeline();
         selectedId = id;
         historyOrder = 'newest';
         hideTooltip();
@@ -1707,18 +1739,204 @@
           </button>`).join('') : '<div class="empty-list home-empty">No matching country found.</div>';
       }
 
+      function timelineFrameForVisit(visit) {
+        if (!visit?.date) return null;
+        const [year, month] = visit.date.split('-').map(Number);
+        if (!Number.isInteger(year)) return null;
+        const precision = visit.precision || inferDatePrecision(visit.date);
+        const hasMonth = precision === 'month' && Number.isInteger(month) && month >= 1 && month <= 12;
+        const position = hasMonth ? month : 13;
+        return {
+          key: `${year}-${String(position).padStart(2, '0')}`,
+          year: String(year),
+          month: hasMonth ? month : null,
+          order: year * 13 + position,
+          label: hasMonth ? `${monthLabels[month - 1]} ${year}` : String(year)
+        };
+      }
+
+      function timelineAvailableFrames() {
+        const frames = new Map();
+        Object.keys(state.countries).flatMap(id => completedVisitsFor(id)).forEach(visit => {
+          const frame = timelineFrameForVisit(visit);
+          if (frame) frames.set(frame.key, frame);
+        });
+        return [...frames.values()].sort((a, b) => a.order - b.order);
+      }
+
+      function updateTimelineControl() {
+        const button = document.querySelector('#mapTimelineToggle');
+        const hasFrames = timelineAvailableFrames().length > 0;
+        const finished = timelineActive && timelineIndex >= timelineFrames.length - 1;
+        const label = !hasFrames ? 'Add a dated trip to play your travel history'
+          : timelinePlaying ? 'Pause travel history'
+          : finished ? 'Replay travel history'
+          : timelineActive ? 'Continue travel history'
+          : 'Play travel history';
+        button.disabled = !hasFrames;
+        button.classList.toggle('playing', timelinePlaying);
+        button.setAttribute('aria-pressed', String(timelinePlaying));
+        button.setAttribute('aria-label', label);
+        button.title = label;
+        document.querySelector('.map-shell').classList.toggle('timeline-active', timelineActive);
+      }
+
+      function clearTimelineTimer() {
+        if (timelineTimer) clearTimeout(timelineTimer);
+        timelineTimer = null;
+      }
+
+      function pauseTimeline() {
+        clearTimelineTimer();
+        timelinePlaying = false;
+        updateTimelineControl();
+      }
+
+      function exitTimeline() {
+        clearTimelineTimer();
+        timelineActive = false;
+        timelinePlaying = false;
+        timelineFrames = [];
+        timelineIndex = -1;
+        timelineFrame = null;
+        timelineVisibleCounts = new Map();
+        countriesGroup.selectAll('path').interrupt('timeline-reveal')
+          .each(function() { this._timelineReveal?.cancel(); this._timelineReveal = null; })
+          .style('transition', null).style('fill', null).style('stroke', null).style('stroke-width', null).style('opacity', null).style('filter', null);
+        markersGroup.selectAll('.marker-ring').interrupt('timeline-reveal')
+          .each(function() { this._timelineReveal?.cancel(); this._timelineReveal = null; })
+          .style('transition', null).style('fill', null).style('stroke', null).style('stroke-width', null).style('opacity', null).style('filter', null);
+        updateTimelineControl();
+      }
+
+      function animateTimelineNode(node, startFill) {
+        node._timelineReveal?.cancel();
+        const computed = getComputedStyle(node);
+        const final = {
+          fill: computed.fill,
+          stroke: computed.stroke,
+          strokeWidth: computed.strokeWidth
+        };
+
+        if (document.documentElement.dataset.theme === 'dark') {
+          node._timelineReveal = node.animate([
+            { fill: startFill, stroke: final.stroke, strokeWidth: final.strokeWidth, offset: 0 },
+            { fill: startFill, stroke: final.stroke, strokeWidth: final.strokeWidth, offset: .14 },
+            { fill: final.fill, stroke: final.stroke, strokeWidth: final.strokeWidth, offset: 1 }
+          ], {
+            duration: 1100,
+            easing: 'cubic-bezier(.42, 0, .2, 1)'
+          });
+          node._timelineReveal.addEventListener('finish', () => { node._timelineReveal = null; }, { once: true });
+          return;
+        }
+
+        const selection = d3.select(node);
+        const clearStyles = function() {
+          d3.select(this).style('transition', null).style('fill', null).style('stroke', null)
+            .style('stroke-width', null).style('opacity', null).style('filter', null);
+        };
+        selection.interrupt('timeline-reveal')
+          .style('transition', 'none')
+          .style('fill', startFill)
+          .style('stroke', 'var(--visited)')
+          .style('stroke-width', '2.4px')
+          .style('opacity', .32)
+          .style('filter', 'brightness(1.22)');
+
+        requestAnimationFrame(() => {
+          selection.transition('timeline-reveal')
+            .duration(950)
+            .ease(d3.easeCubicInOut)
+            .style('fill', final.fill)
+            .style('stroke', final.stroke)
+            .style('stroke-width', final.strokeWidth)
+            .style('opacity', 1)
+            .style('filter', 'none')
+            .on('end interrupt', clearStyles);
+        });
+      }
+
+      function animateTimelinePlaces(ids) {
+        if (!timelineActive || !ids.length) return;
+        const changed = new Set(ids);
+        const styles = getComputedStyle(document.documentElement);
+        const landFill = styles.getPropertyValue('--land').trim();
+        countriesGroup.selectAll('path').filter(place => changed.has(place.id)).each(function() { animateTimelineNode(this, landFill); });
+        markersGroup.selectAll('.place-marker').filter(place => changed.has(place.id)).each(function() {
+          const ring = this.querySelector('.marker-ring');
+          if (ring) animateTimelineNode(ring, landFill);
+        });
+      }
+
+      function renderTimelineFrame() {
+        const allVisits = Object.values(state.countries).flatMap(value => value.visits || []);
+        const years = [...new Set(allVisits.map(visit => visit.date?.slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a));
+        const visibleCounts = new Map(places.map(place => [place.id, mapVisitsFor(place.id).length]));
+        const changedIds = [...visibleCounts].filter(([id, count]) => count > (timelineVisibleCounts.get(id) || 0)).map(([id]) => id);
+        timelineVisibleCounts = visibleCounts;
+        renderMapPeriodControl(years, allVisits.some(visit => !visit.date));
+        renderMap();
+        animateTimelinePlaces(changedIds);
+      }
+
+      function scheduleTimelineStep() {
+        clearTimelineTimer();
+        timelineTimer = setTimeout(() => {
+          if (!timelinePlaying) return;
+          if (timelineIndex >= timelineFrames.length - 1) {
+            timelineTimer = null;
+            setMapPeriod('all');
+            return;
+          }
+          timelineIndex += 1;
+          timelineFrame = timelineFrames[timelineIndex];
+          renderTimelineFrame();
+          scheduleTimelineStep();
+        }, 1150);
+      }
+
+      function toggleTimeline() {
+        if (timelinePlaying) {
+          pauseTimeline();
+          return;
+        }
+        const frames = timelineAvailableFrames();
+        if (!frames.length) {
+          showToast('Add a trip with a year to play your travel history');
+          return;
+        }
+        const shouldRestart = !timelineActive || timelineIndex >= timelineFrames.length - 1 || frames.map(frame => frame.key).join() !== timelineFrames.map(frame => frame.key).join();
+        timelineFrames = frames;
+        if (shouldRestart) {
+          timelineIndex = 0;
+          timelineFrame = timelineFrames[0];
+          timelineVisibleCounts = new Map();
+        }
+        timelineActive = true;
+        timelinePlaying = true;
+        renderTimelineFrame();
+        scheduleTimelineStep();
+      }
+
       function renderMapPeriodControl(years, hasUnknown) {
         availableMapPeriods = ['all', ...years, ...(hasUnknown ? ['unknown'] : [])];
         if (!availableMapPeriods.includes(mapPeriod)) mapPeriod = 'all';
         const select = document.querySelector('#mapPeriod');
         select.innerHTML = `<option value="all">All time</option>${years.map(year => `<option value="${year}">${year}</option>`).join('')}${hasUnknown ? '<option value="unknown">Date unknown</option>' : ''}`;
-        select.value = mapPeriod;
-        const periodLabel = mapPeriod === 'all' ? 'all time' : mapPeriod === 'unknown' ? 'unknown dates' : mapPeriod;
-        document.querySelector('#mapSubtitle').textContent = mapPeriod === 'all' ? 'Choose a place on the map' : `Showing trips from ${periodLabel}`;
-        document.querySelector('#visitedLegendLabel').textContent = mapPeriod === 'all' ? 'Visited' : `Visited · ${periodLabel}`;
+        select.value = timelineActive ? timelineFrame.year : mapPeriod;
+        if (timelineActive) {
+          document.querySelector('#mapSubtitle').textContent = `Your travels through ${timelineFrame.label}`;
+        } else {
+          const periodLabel = mapPeriod === 'all' ? 'all time' : mapPeriod === 'unknown' ? 'unknown dates' : mapPeriod;
+          document.querySelector('#mapSubtitle').textContent = mapPeriod === 'all' ? 'Choose a place on the map' : `Showing trips from ${periodLabel}`;
+        }
+        document.querySelector('#visitedLegendLabel').textContent = 'Visited';
+        updateTimelineControl();
       }
 
       function setMapPeriod(period) {
+        exitTimeline();
         mapPeriod = period;
         const allVisits = Object.values(state.countries).flatMap(value => value.visits || []);
         const years = [...new Set(allVisits.map(visit => visit.date?.slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a));
@@ -2042,6 +2260,7 @@
       }
 
       function openShareCard(preferredPeriod = statisticsPeriod) {
+        if (timelinePlaying) pauseTimeline();
         const years = [...new Set(completedTripRecords().map(trip => trip.date?.slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a));
         const period = years.includes(preferredPeriod) ? preferredPeriod : 'all';
         const periodSelect = document.querySelector('#sharePeriod');
@@ -2068,6 +2287,7 @@
       }
 
       function openStatisticsView(pushHistory = true) {
+        if (timelinePlaying) pauseTimeline();
         if (pushHistory && location.hash !== '#statistics') history.pushState({ view: 'statistics' }, '', '#statistics');
         document.querySelector('.app').hidden = true;
         document.querySelector('#statisticsView').hidden = false;
@@ -2490,12 +2710,14 @@
       });
       document.querySelector('#mapPeriod').addEventListener('change', event => setMapPeriod(event.target.value));
       function stepMapPeriod(direction) {
-        const currentIndex = availableMapPeriods.indexOf(mapPeriod);
+        const currentIndex = availableMapPeriods.indexOf(timelineActive ? timelineFrame.year : mapPeriod);
         const nextIndex = (currentIndex + direction + availableMapPeriods.length) % availableMapPeriods.length;
         setMapPeriod(availableMapPeriods[nextIndex]);
       }
+      document.querySelector('#mapTimelineToggle').addEventListener('click', toggleTimeline);
       document.querySelector('#mapPeriodPrevious').addEventListener('click', () => stepMapPeriod(-1));
       document.querySelector('#mapPeriodNext').addEventListener('click', () => stepMapPeriod(1));
+      document.addEventListener('visibilitychange', () => { if (document.hidden && timelinePlaying) pauseTimeline(); });
       const markerToggle = document.querySelector('#markerToggle');
       markerToggle.checked = showSmallPlaces;
       markerToggle.addEventListener('change', () => {
@@ -2613,6 +2835,6 @@
       });
     })();
   </script>
-  <script type="module" src="./cloud-sync.js?v=20260620-4"></script>
+  <script type="module" src="./cloud-sync.js?v=20260620-5"></script>
 </body>
 </html>

@@ -242,7 +242,7 @@ function setSignedOutUi() {
   signInButton.innerHTML = '<span class="google-mark" aria-hidden="true">G</span> Sign in to sync';
 }
 
-function setSignedInUi(user, status = 'Connecting to cloud…') {
+function setSignedInUi(user, status = '') {
   panel.hidden = false;
   signedOutView.hidden = true;
   signedInView.hidden = false;
@@ -305,7 +305,7 @@ async function syncNow() {
   syncInFlight = true;
   syncRequested = false;
   const user = currentUser;
-  setStatus(navigator.onLine ? 'Syncing…' : 'Offline · saved on this device');
+  setStatus(navigator.onLine ? '' : 'Offline · saved on this device');
   try {
     const reference = firestoreApi.doc(database, 'users', user.uid);
     const merged = await firestoreApi.runTransaction(database, async transaction => {
@@ -327,7 +327,7 @@ async function syncNow() {
     if (!same(normalizeState(bridge.getState()), merged)) bridge.applyState(merged);
     writeState(accountBaseKey(user.uid), merged);
     writeState(accountStateKey(user.uid), merged);
-    setStatus('Synced just now');
+    setStatus('');
   } catch (error) {
     console.error('Cloud sync failed:', error);
     if (currentUser?.uid === user.uid) setStatus('Offline · changes saved locally');
@@ -435,11 +435,11 @@ async function initializeCloudSync() {
       event.preventDefault();
       if (!currentUser) return;
       const nickname = normalizeNickname(nicknameInput.value);
-      setStatus('Saving profile…');
+      setStatus('');
       setAccountMenuOpen(false);
       try {
         await authApi.updateProfile(currentUser, { displayName: nickname || null });
-        setSignedInUi(currentUser, 'Synced just now');
+        setSignedInUi(currentUser);
       } catch (error) {
         console.error('Profile update failed:', error);
         setStatus('Profile could not be updated');
