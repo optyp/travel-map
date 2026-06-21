@@ -1,23 +1,128 @@
 # My World Map
 
-> A free interactive map of visited countries for recording travel history, planning future trips, building a wishlist, and exploring personal travel statistics.
+> My World Map is a free interactive visited-countries map and personal travel tracker. It records completed and planned trips, supports flexible dates, builds travel statistics, creates shareable map cards, and offers optional Google sign-in for cross-device cloud sync.
 
-My World Map is a browser-based travel tracker. People can mark countries and territories they have visited, save trips with an optional month and year, distinguish planned travel from completed travel, select a home country, and view travel statistics. Travel data remains in the user's browser unless the user chooses to export it.
+My World Map is a lightweight browser application hosted on GitHub Pages. It works without registration and stores travel data locally by default. Users who choose to sign in with Google can synchronize their map through Firebase Authentication and Cloud Firestore.
 
-## Main page
+The interface and project documentation are in English.
 
-- [My World Map](https://optyp.github.io/travel-map/): Open the interactive visited-countries map and travel tracker.
+## Main links
 
-## Main features
+- [Open My World Map](https://optyp.github.io/travel-map/): Use the interactive map and travel tracker.
+- [Project README](https://github.com/optyp/travel-map/blob/main/README.md): Detailed feature, privacy, sync, and technical documentation.
+- [Source repository](https://github.com/optyp/travel-map): Public GitHub repository.
 
-- Interactive world map of visited countries and territories
-- Completed and planned trip tracking
-- Travel wishlist and home country
-- Year-based map filtering
-- Personal travel statistics
-- Downloadable share cards without private trip notes
+## Core capabilities
+
+- Interactive world map with 242 mapped countries and territories
+- Multiple completed or planned trips per place
+- Optional note attached to each trip
+- Three levels of date precision: month and year, year only, or unknown date
+- Wishlist for places the user wants to visit
+- Planned trips automatically included in the wishlist experience
+- Separate home-country state that does not count as a trip
+- Search, map focus, zoom controls, and selectable small-place markers
+- Year-specific map filtering
+- Animated chronological playback of completed travel history
+- Visit-intensity colours at 1, 2, 3, 5, 10, and 20 or more trips
 - Light and dark themes
+- Responsive desktop, tablet, portrait-mobile, and landscape-mobile layouts
+- JSON backup and restore
 
-## Privacy
+## Trips and plans
 
-Trip notes and exact personal travel details are not published by the site. Saved travel data is stored locally in the user's browser.
+Every country can contain multiple trips. A trip can have a month and year, only a year, or no date. Dates are optional so older travel can still be recorded when the exact period is unknown.
+
+Future trips are treated as planned rather than completed. A planned month remains planned through the end of that month, and a year-only plan remains planned through the end of that year. Once its period has passed, it becomes a completed trip automatically. During the relevant month or year, the user can confirm it as completed manually.
+
+Planned trips do not count toward completed-trip totals. Users can add, edit, delete, sort, and copy trip history for an individual country. All trips for one country can also be cleared without affecting other places.
+
+## Map and travel history
+
+Visited countries change colour, while frequently revisited countries receive progressively deeper shades. Wishlist places and the selected home country use separate visual states.
+
+The map can show all completed travel or a selected year. Its playback control reveals completed trips chronologically: month-specific trips appear from January through December, followed by trips that only specify the year. Planned trips and wishlist-only places are hidden during historical playback. After the animation finishes, the map returns to the all-time view.
+
+Small countries and territories that are difficult to click as geographic shapes use compact fixed-size markers. Unvisited small-place markers can be hidden without hiding visited, planned, wishlist, or home markers.
+
+The bundled geographic data is curated so Crimea is represented as part of Ukraine.
+
+## Travel statistics
+
+The statistics view supports all-time and individual-year analysis. It includes:
+
+- Places visited
+- Completed and planned trip totals
+- New countries and return trips
+- Percentage of mapped places visited
+- Continents reached and progress within each continent
+- Trips over time
+- Most active year
+- Favourite travel month
+- Earliest recorded trip
+- Consecutive travel years
+- Average trips per active year
+- Latest new place
+- Most frequently visited places
+- Wishlist totals and upcoming plans
+
+Transcontinental countries count toward every applicable continent by default. Users who want more precise personal statistics can override the counted continents for an individual country.
+
+## Share cards
+
+The application generates a 1200 by 630 pixel travel card locally in the browser. The user can select an all-time or yearly period, choose light or dark styling, and enter an optional custom headline.
+
+The card can be downloaded as a PNG or shared through the device's native sharing interface when supported. It contains the map and high-level totals but never includes personal trip notes or detailed trip dates.
+
+## Local storage and backups
+
+Without an account, the user's state is stored in the browser's localStorage. Registration is not required. The local state includes trips, notes, wishlist entries, home country, and continent-statistics overrides.
+
+Users can download a JSON backup and restore it later. Clearing browser site data removes anonymous local travel data unless a backup exists.
+
+## Google sign-in and cloud sync
+
+Google sign-in is optional and enables cross-device synchronization through Firebase Authentication and Cloud Firestore.
+
+When a user signs in:
+
+- Existing anonymous browser data is merged into the account automatically
+- Identical trips are deduplicated
+- Different changes from multiple devices are combined
+- An account-specific local cache is maintained
+- Offline changes remain available locally and synchronize after connectivity returns
+- Signing in on another device loads the synchronized account state
+
+When a user signs out, the account map is retained in its account-specific cache and cloud document. The browser returns to its separate anonymous state, preventing one account's trips from being imported into a different account accidentally.
+
+The synchronized state includes trips, notes, wishlist entries, home country, and continent overrides. Theme and interface preferences remain local to each browser.
+
+## Privacy and data handling
+
+- Local use does not require an account
+- Anonymous travel data remains in the current browser
+- Signed-in travel data is stored in Cloud Firestore and an account-specific browser cache
+- Firestore security rules prevent signed-in users from reading or modifying another user's travel document
+- Share cards are generated locally and exclude notes and detailed dates
+- Google authentication is used only after the user explicitly chooses to sign in
+
+The cloud data is not end-to-end encrypted. This application should not be described as storing signed-in data only on the user's device.
+
+## Technology
+
+- Static HTML, modern CSS, and vanilla JavaScript
+- D3.js for GeoJSON rendering, geographic projection, zoom, and map interaction
+- Canvas API for share-card rendering
+- Firebase Authentication for optional Google sign-in
+- Cloud Firestore for optional synchronization
+- LocalStorage for anonymous and offline state
+- GitHub Pages for hosting
+- No application build step
+
+## Terminology
+
+- "Place" means a mapped country or territory.
+- "Completed trip" means a visit that is not currently classified as future or planned.
+- "Planned trip" means a future visit that does not yet count toward completed-trip statistics.
+- "Wishlist place" means a manually saved destination or a place with a planned trip.
+- "Home country" is a separate map state and is not counted as a completed trip.
