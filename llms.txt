@@ -1,14 +1,14 @@
-# My World Map
+# Your World, Mapped
 
-> My World Map is a free interactive visited-countries map and personal travel tracker. It records completed and planned trips, supports flexible dates, builds travel statistics, creates shareable map cards, and offers optional Google sign-in for cross-device cloud sync.
+> Your World, Mapped is a free interactive visited-countries map and personal travel tracker. It records completed and planned trips, supports flexible dates, builds travel statistics, creates shareable map cards, and offers optional Google sign-in for cross-device cloud sync.
 
-My World Map is a lightweight browser application hosted on GitHub Pages. It works without registration and stores travel data locally by default. Users who choose to sign in with Google can synchronize their map through Firebase Authentication and Cloud Firestore.
+Your World, Mapped is a lightweight browser application hosted on GitHub Pages. It works without registration and stores travel data locally by default. Users who choose to sign in with Google can synchronize their map through Firebase Authentication and Cloud Firestore.
 
 The interface and project documentation are in English.
 
 ## Main links
 
-- [Open My World Map](https://optyp.github.io/travel-map/): Use the interactive map and travel tracker.
+- [Open Your World, Mapped](https://optyp.github.io/travel-map/): Use the interactive map and travel tracker.
 - [Project README](https://github.com/optyp/travel-map/blob/main/README.md): Detailed feature, privacy, sync, and technical documentation.
 - [Source repository](https://github.com/optyp/travel-map): Public GitHub repository.
 

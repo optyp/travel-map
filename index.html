@@ -9,28 +9,28 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://optyp.github.io/travel-map/">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="My World Map">
+  <meta property="og:site_name" content="Your World, Mapped">
   <meta property="og:locale" content="en_US">
-  <meta property="og:title" content="My World Map — Visited Countries Map &amp; Travel Tracker">
+  <meta property="og:title" content="Your World, Mapped — Visited Countries Map &amp; Travel Tracker">
   <meta property="og:description" content="Track completed and planned trips, explore travel statistics, build a wishlist, create share cards, and optionally sync across devices.">
   <meta property="og:url" content="https://optyp.github.io/travel-map/">
   <meta property="og:image" content="https://optyp.github.io/travel-map/social-preview.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="My World Map travel tracker with a world map and highlighted countries">
+  <meta property="og:image:alt" content="Your World, Mapped travel tracker with a world map and highlighted countries">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="My World Map — Visited Countries Map &amp; Travel Tracker">
+  <meta name="twitter:title" content="Your World, Mapped — Visited Countries Map &amp; Travel Tracker">
   <meta name="twitter:description" content="Track completed and planned trips, explore travel statistics, build a wishlist, and optionally sync across devices.">
   <meta name="twitter:image" content="https://optyp.github.io/travel-map/social-preview.png">
-  <meta name="twitter:image:alt" content="My World Map travel tracker with a world map and highlighted countries">
-  <title>My World Map — Visited Countries Map &amp; Travel Tracker</title>
+  <meta name="twitter:image:alt" content="Your World, Mapped travel tracker with a world map and highlighted countries">
+  <title>Your World, Mapped — Visited Countries Map &amp; Travel Tracker</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "My World Map",
+      "name": "Your World, Mapped",
       "url": "https://optyp.github.io/travel-map/",
       "image": "https://optyp.github.io/travel-map/social-preview.png",
       "description": "A free interactive visited-countries map and travel tracker for recording completed and planned trips, exploring personal travel statistics, building a wishlist, creating share cards, and optionally syncing across devices.",
@@ -133,6 +133,35 @@
       color: var(--ink);
       background: var(--paper);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .skip-link {
+      position: fixed;
+      z-index: 1000;
+      top: 10px;
+      left: 10px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transform: translateY(-160%);
+      transition: transform .15s ease;
+      box-shadow: 0 8px 24px rgba(23,34,31,.14);
+    }
+    .skip-link:focus { transform: translateY(0); }
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
     }
     button, input, textarea { font: inherit; }
     button { color: inherit; }
@@ -312,6 +341,12 @@
     #yearFilter { padding-top: 1px; }
     .country-list { min-height: 0; flex: 1; overflow: auto; margin: 0 -8px; padding: 0 8px 8px; scrollbar-width: thin; }
     .empty-list { padding: 28px 10px; color: var(--muted); text-align: center; font-size: 13px; line-height: 1.5; }
+    .empty-list-onboarding { display: grid; justify-items: center; gap: 7px; padding: 30px 12px; }
+    .empty-list-onboarding strong { color: var(--ink); font-family: Georgia, serif; font-size: 17px; font-weight: 560; }
+    .empty-list-onboarding > span { max-width: 240px; }
+    .empty-list-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 7px; }
+    .empty-list-action { min-height: 32px; padding: 7px 11px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); background: rgba(255,255,255,.52); font-size: 10px; font-weight: 680; cursor: pointer; }
+    .empty-list-action:hover, .empty-list-action:focus-visible { color: var(--ink); border-color: color-mix(in srgb, var(--visited) 42%, var(--line)); outline: none; }
     .country-item {
       width: 100%;
       display: flex;
@@ -680,6 +715,12 @@
     .statistics-toolbar strong { font-family: Georgia, serif; font-size: 18px; font-weight: 560; }
     .statistics-period { min-width: 130px; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: rgba(255,255,255,.54); font-size: 11px; outline: none; cursor: pointer; }
     .statistics-period option { color: var(--ink); background: white; }
+    .statistics-welcome { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 12px; padding: 15px 17px; border: 1px solid color-mix(in srgb, var(--visited) 24%, var(--line)); border-radius: 16px; background: color-mix(in srgb, var(--visited) 7%, transparent); }
+    .statistics-welcome[hidden] { display: none; }
+    .statistics-welcome strong { display: block; font-family: Georgia, serif; font-size: 16px; font-weight: 560; }
+    .statistics-welcome span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .statistics-welcome button { min-height: 34px; flex: 0 0 auto; padding: 7px 12px; border: 0; border-radius: 10px; color: white; background: var(--visited); font-size: 10px; font-weight: 720; cursor: pointer; }
+    .statistics-welcome button:hover { background: var(--visited-hover); }
     .statistics-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
     .statistics-card { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.48); }
     .statistics-card h3 { margin: 0; font-family: Georgia, serif; font-size: 18px; font-weight: 560; }
@@ -755,9 +796,12 @@
     .share-primary:hover { background: var(--visited-hover); }
     .share-primary[hidden] { display: none; }
     .toast-region { position: fixed; left: 50%; bottom: 24px; z-index: 100; transform: translateX(-50%); pointer-events: none; }
-    .toast { min-width: 220px; max-width: min(380px, calc(100vw - 32px)); padding: 11px 15px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; color: white; background: rgba(23,34,31,.94); box-shadow: 0 14px 35px rgba(0,0,0,.22); text-align: center; font-size: 12px; opacity: 0; transform: translateY(8px); transition: opacity .18s, transform .18s; }
+    .toast { min-width: 220px; max-width: min(420px, calc(100vw - 32px)); padding: 11px 15px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; color: white; background: rgba(23,34,31,.94); box-shadow: 0 14px 35px rgba(0,0,0,.22); text-align: center; font-size: 12px; opacity: 0; transform: translateY(8px); transition: opacity .18s, transform .18s; }
     .toast.show { opacity: 1; transform: translateY(0); }
     .toast.error { background: #913d31; }
+    .toast.has-action { display: flex; align-items: center; justify-content: space-between; gap: 16px; text-align: left; pointer-events: auto; }
+    .toast-action { min-height: 28px; padding: 5px 9px; border: 1px solid rgba(255,255,255,.3); border-radius: 8px; color: white; background: rgba(255,255,255,.1); font: inherit; font-weight: 750; cursor: pointer; }
+    .toast-action:hover, .toast-action:focus-visible { background: rgba(255,255,255,.2); outline: 2px solid white; outline-offset: 1px; }
     .status { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 13px; pointer-events: none; }
     .status.hidden { display: none; }
 
@@ -827,6 +871,7 @@
     html[data-theme="dark"] .continent-progress { background: rgba(255,255,255,.09); }
     html[data-theme="dark"] .ranked-item,
     html[data-theme="dark"] .plan-item { background: rgba(255,255,255,.035); }
+    html[data-theme="dark"] .empty-list-action { background: rgba(255,255,255,.05); }
     html[data-theme="dark"] .share-field input,
     html[data-theme="dark"] .share-field select { color-scheme: dark; color: var(--ink); background: #252a33; }
 
@@ -870,6 +915,8 @@
       .statistics-actions { margin-top: 16px; }
       .statistics-toolbar { align-items: flex-start; flex-direction: column; }
       .statistics-period { width: 100%; }
+      .statistics-welcome { align-items: stretch; flex-direction: column; }
+      .statistics-welcome button { width: 100%; }
       .continent-grid, .pattern-grid { grid-template-columns: 1fr; }
       .plans-summary { grid-template-columns: 1fr; }
       .plan-metric { min-height: 70px; }
@@ -916,10 +963,13 @@
       .map-controls { right: 12px; bottom: 12px; }
     }
 
+    :where(button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--visited); outline-offset: 2px; }
+    .statistics-title h2:focus { outline: none; }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#mapPanel">Skip to interactive map</a>
   <main class="app">
     <aside class="sidebar" aria-label="Travel dashboard">
       <div class="brand-row">
@@ -929,13 +979,13 @@
             <circle cx="12" cy="10" r="2.5"></circle>
           </svg>
         </div>
-        <div><p class="eyebrow">Travel atlas</p><h1>My World Map</h1></div>
+        <div><p class="eyebrow">Travel atlas</p><h1>Your World, Mapped</h1></div>
         <button class="theme-toggle" id="themeToggle" data-theme-toggle type="button" aria-label="Switch to dark mode" title="Switch theme">
           <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.4 8.4 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"></path></svg>
           <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.7"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
         </button>
       </div>
-      <p class="intro">Create your personal map of visited countries. Record past and planned trips, add places to your wishlist, and keep every travel memory on your map.</p>
+      <p class="intro">Every place leaves a mark. Keep yours on the map.</p>
 
       <section class="stats" aria-label="Travel statistics">
         <div class="stat"><strong id="countryCount">0</strong><span>places visited</span></div>
@@ -984,8 +1034,9 @@
       </footer>
     </aside>
 
-    <section class="map-shell" aria-label="Interactive world map">
-      <svg id="map" role="img" aria-label="World map. Visited places are highlighted in green."></svg>
+    <section class="map-shell" id="mapPanel" tabindex="-1" aria-label="Interactive world map">
+      <p class="sr-only" id="mapKeyboardHelp">Use the arrow keys to move between places. Press Enter or Space to open the selected place.</p>
+      <svg id="map" role="group" aria-label="World map. Visited places are highlighted in green." aria-describedby="mapKeyboardHelp"></svg>
       <div class="map-header">
         <div class="map-heading">
           <div class="map-title"><strong>Where have you been?</strong><span id="mapSubtitle">Choose a place on the map</span></div>
@@ -1044,7 +1095,7 @@
       <header class="statistics-header">
         <div class="statistics-brand">
           <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 5.2-8 12-8 12S4 15.2 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></div>
-          <div class="statistics-title"><p class="eyebrow">Travel atlas</p><h2 id="statisticsTitle">Travel statistics</h2><p id="statisticsSubtitle">The story behind your map</p></div>
+          <div class="statistics-title"><p class="eyebrow">Travel atlas</p><h2 id="statisticsTitle" tabindex="-1">Travel statistics</h2><p id="statisticsSubtitle">The story behind your map</p></div>
         </div>
         <div class="statistics-actions">
           <button class="back-to-map" id="openShareCard" type="button">Share card</button>
@@ -1059,6 +1110,10 @@
         <strong id="statisticsPeriodLabel">All-time overview</strong>
         <select class="statistics-period" id="statisticsPeriod" aria-label="Statistics period"><option value="all">All time</option></select>
       </div>
+      <section class="statistics-welcome" id="statisticsWelcome" aria-label="Get started" hidden>
+        <div><strong>Your travel story starts on the map</strong><span>Add a completed trip and this page will reveal your timeline, travel patterns, continents and favourites.</span></div>
+        <button id="statisticsStartMap" type="button">Add your first trip</button>
+      </section>
       <div class="statistics-grid">
         <section class="statistics-overview" id="statisticsOverview" aria-label="Statistics overview"></section>
         <section class="statistics-card year-chart-card"><h3>Trips over time</h3><p class="statistics-card-subtitle">Select a year to explore it on the map.</p><div class="year-chart" id="yearChart"></div></section>
@@ -1253,6 +1308,8 @@
       let timelineVisibleCounts = new Map();
       let statisticsPeriod = 'all';
       let pendingMapAction = null;
+      let lastMapFocus = null;
+      let mapKeyboardPlaceId = null;
       let shareTitleCustomized = false;
       let editingVisitId = null;
       let toastTimer;
@@ -1505,22 +1562,74 @@
         const plannedLabel = mapPlannedVisitsFor(place.id).length ? ', planned trip' : mapWishlistVisible(place.id) ? ', on wishlist' : '';
         return `${countryName(place)}${isHome(place.id) ? ', home country' : ''}${visitedLabel}${plannedLabel}`;
       }
+      function keyboardMapPlaces() {
+        return [...countries, ...markerPlaces.filter(place => !markerIsHidden(place.id))]
+          .sort((a, b) => countryName(a).localeCompare(countryName(b)));
+      }
+      function ensureMapKeyboardPlace() {
+        const available = keyboardMapPlaces();
+        const availableIds = new Set(available.map(place => place.id));
+        const preferred = [mapKeyboardPlaceId, selectedId, state.homeCountryId, ...Object.keys(state.countries)]
+          .find(id => id && availableIds.has(id));
+        mapKeyboardPlaceId = preferred || available[0]?.id || null;
+        return available;
+      }
+      function updateMapTabStops() {
+        countriesGroup.selectAll('.country').attr('tabindex', place => place.id === mapKeyboardPlaceId ? 0 : -1);
+        markersGroup.selectAll('.place-marker').attr('tabindex', place => !markerIsHidden(place.id) && place.id === mapKeyboardPlaceId ? 0 : -1);
+      }
+      function focusMapPlace(id) {
+        mapKeyboardPlaceId = id;
+        updateMapTabStops();
+        const countryNode = countriesGroup.selectAll('.country').filter(place => place.id === id).node();
+        const markerNode = markersGroup.selectAll('.place-marker').filter(place => place.id === id).node();
+        (countryNode || markerNode)?.focus({ preventScroll: true });
+      }
       function handlePlaceKeydown(event, place) {
-        if (event.key !== 'Enter' && event.key !== ' ') return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openCountry(place.id);
+          return;
+        }
+        if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
         event.preventDefault();
-        openCountry(place.id);
+        const available = keyboardMapPlaces();
+        const currentIndex = Math.max(0, available.findIndex(item => item.id === place.id));
+        const nextIndex = event.key === 'Home' ? 0
+          : event.key === 'End' ? available.length - 1
+          : (currentIndex + (event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1) + available.length) % available.length;
+        if (available[nextIndex]) focusMapPlace(available[nextIndex].id);
       }
 
-      function showToast(message, tone = '') {
+      function showToast(message, tone = '', action = null) {
         const region = document.querySelector('#toastRegion');
         clearTimeout(toastTimer);
-        region.innerHTML = `<div class="toast${tone ? ` ${tone}` : ''}">${escapeHtml(message)}</div>`;
+        region.innerHTML = `<div class="toast${tone ? ` ${tone}` : ''}${action ? ' has-action' : ''}"><span>${escapeHtml(message)}</span>${action ? `<button class="toast-action" type="button">${escapeHtml(action.label)}</button>` : ''}</div>`;
         const toast = region.firstElementChild;
-        requestAnimationFrame(() => toast.classList.add('show'));
-        toastTimer = setTimeout(() => {
+        const dismiss = () => {
           toast.classList.remove('show');
           setTimeout(() => { if (region.contains(toast)) toast.remove(); }, 200);
-        }, 2600);
+        };
+        if (action) toast.querySelector('.toast-action').addEventListener('click', () => {
+          clearTimeout(toastTimer);
+          action.onClick();
+          dismiss();
+        });
+        requestAnimationFrame(() => toast.classList.add('show'));
+        toastTimer = setTimeout(() => {
+          dismiss();
+        }, action ? 3000 : 2600);
+      }
+
+      function showUndoToast(message, previousState, { renderDialogHistory = false } = {}) {
+        showToast(message, '', {
+          label: 'Undo',
+          onClick() {
+            state = structuredClone(previousState);
+            persistState({ renderDialogHistory: renderDialogHistory && dialog.open });
+            showToast('Change undone');
+          }
+        });
       }
 
       async function copyToClipboard(text) {
@@ -1607,6 +1716,7 @@
       }
 
       function renderMap() {
+        ensureMapKeyboardPlace();
         countriesGroup.selectAll('path')
           .data(countries, d => d.id)
           .join('path')
@@ -1615,13 +1725,18 @@
             const visitCount = mapVisitsFor(d.id).length;
             return `country${visitCount ? ' visited' : ''}${frequencyClass(visitCount)}${mapWishlistVisible(d.id) ? ' wishlist' : ''}${isHome(d.id) ? ' home' : ''}${d.id === selectedId ? ' selected' : ''}`;
           })
-          .attr('tabindex', 0)
+          .attr('tabindex', d => d.id === mapKeyboardPlaceId ? 0 : -1)
           .attr('role', 'button')
+          .attr('aria-keyshortcuts', 'Enter Space ArrowLeft ArrowRight ArrowUp ArrowDown Home End')
           .attr('aria-label', placeAriaLabel)
           .on('click', (_, d) => openCountry(d.id))
           .on('keydown', handlePlaceKeydown)
           .on('pointerenter', event => d3.select(event.currentTarget).raise())
-          .on('focus', event => d3.select(event.currentTarget).raise())
+          .on('focus', (event, d) => {
+            mapKeyboardPlaceId = d.id;
+            updateMapTabStops();
+            d3.select(event.currentTarget).raise();
+          })
           .on('pointermove', (event, d) => showTooltip(event, d))
           .on('pointerleave', hideTooltip);
 
@@ -1643,12 +1758,17 @@
             const wishlist = mapWishlistVisible(d.id);
             return `place-marker${visitCount ? ' visited' : ''}${frequencyClass(visitCount)}${wishlist ? ' wishlist' : ''}${home ? ' home' : ''}${d.id === selectedId ? ' selected' : ''}${!showSmallPlaces && !visitCount && !home && !wishlist ? ' marker-hidden' : ''}`;
           })
-          .attr('tabindex', d => markerIsHidden(d.id) ? -1 : 0)
+          .attr('tabindex', d => !markerIsHidden(d.id) && d.id === mapKeyboardPlaceId ? 0 : -1)
           .attr('aria-hidden', d => markerIsHidden(d.id) ? 'true' : null)
           .attr('role', 'button')
+          .attr('aria-keyshortcuts', 'Enter Space ArrowLeft ArrowRight ArrowUp ArrowDown Home End')
           .attr('aria-label', placeAriaLabel)
           .on('click', (_, d) => openCountry(d.id))
           .on('keydown', handlePlaceKeydown)
+          .on('focus', (_, d) => {
+            mapKeyboardPlaceId = d.id;
+            updateMapTabStops();
+          })
           .on('pointermove', (event, d) => showTooltip(event, d))
           .on('pointerleave', hideTooltip);
       }
@@ -2063,6 +2183,7 @@
         periodSelect.value = statisticsPeriod;
         document.querySelector('#statisticsPeriodLabel').textContent = statisticsPeriod === 'all' ? 'All-time overview' : `${statisticsPeriod} overview`;
         document.querySelector('#statisticsSubtitle').textContent = statisticsPeriod === 'all' ? 'The story behind your map' : `A closer look at ${statisticsPeriod}`;
+        document.querySelector('#statisticsWelcome').hidden = statisticsPeriod !== 'all' || allTrips.length > 0;
 
         const trips = statisticTripsFor();
         const visitedIds = [...new Set(trips.map(trip => trip.countryId))];
@@ -2280,7 +2401,7 @@
 
         context.fillStyle = palette.muted;
         context.font = '500 13px Inter, system-ui, sans-serif';
-        context.fillText('My World Map', 68, 558);
+        context.fillText('Your World, Mapped', 68, 558);
       }
 
       function shareCanvasFile() {
@@ -2321,21 +2442,24 @@
 
       function openStatisticsView(pushHistory = true) {
         if (timelinePlaying) pauseTimeline();
+        if (!document.querySelector('.app').hidden && document.querySelector('.app').contains(document.activeElement)) lastMapFocus = document.activeElement;
         if (pushHistory && location.hash !== '#statistics') history.pushState({ view: 'statistics' }, '', '#statistics');
         document.querySelector('.app').hidden = true;
         document.querySelector('#statisticsView').hidden = false;
-        document.title = 'Travel Statistics · My World Map';
+        document.title = 'Travel Statistics · Your World, Mapped';
         renderStatistics();
         document.querySelector('#statisticsView').scrollTop = 0;
+        requestAnimationFrame(() => document.querySelector('#statisticsTitle').focus({ preventScroll: true }));
       }
 
       function showMapView(action) {
         document.querySelector('#statisticsView').hidden = true;
         document.querySelector('.app').hidden = false;
-        document.title = 'My World Map — Map of Visited Countries';
+        document.title = 'Your World, Mapped — Map of Visited Countries';
         requestAnimationFrame(() => {
           resizeMap();
           if (action) setTimeout(action, 40);
+          else if (lastMapFocus?.isConnected) lastMapFocus.focus({ preventScroll: true });
         });
       }
 
@@ -2400,10 +2524,12 @@
           .sort(comparePlaces);
         const list = document.querySelector('#countryList');
         if (!items.length) {
-          const emptyMessage = showWishlistOnly
-            ? 'Your wishlist is empty.<br>Add a place from its trip panel.'
-            : query || yearFilter !== 'all' ? 'No matching place found.' : 'Nothing here yet.<br>Choose your first place on the map.';
-          list.innerHTML = `<div class="empty-list">${emptyMessage}</div>`;
+          if (!showWishlistOnly && !query && yearFilter === 'all') {
+            list.innerHTML = `<div class="empty-list empty-list-onboarding"><strong>Start your travel map</strong><span>Browse the full list to add your first trip.</span><div class="empty-list-actions"><button class="empty-list-action" type="button" data-empty-action="browse">Browse all</button></div></div>`;
+          } else {
+            const emptyMessage = showWishlistOnly ? 'Your wishlist is empty.<br>Add a place from its trip panel.' : 'No matching place found.';
+            list.innerHTML = `<div class="empty-list">${emptyMessage}</div>`;
+          }
           return;
         }
         list.innerHTML = items.map(feature => {
@@ -2527,11 +2653,12 @@
         if (editButton) { startEditingVisit(editButton.dataset.edit); return; }
         const deleteButton = event.target.closest('[data-delete]');
         if (!deleteButton || !selectedId) return;
+        const previousState = structuredClone(state);
         if (editingVisitId === deleteButton.dataset.delete) stopEditingVisit();
         state.countries[selectedId].visits = visitsFor(selectedId).filter(visit => visit.id !== deleteButton.dataset.delete);
         if (!state.countries[selectedId].visits.length) delete state.countries[selectedId];
         persistState({ renderDialogHistory: true });
-        showToast('Trip deleted');
+        showUndoToast('Trip deleted', previousState, { renderDialogHistory: true });
       });
 
       document.querySelector('#cancelEdit').addEventListener('click', stopEditingVisit);
@@ -2590,14 +2717,21 @@
       document.querySelector('#clearCountryTrips').addEventListener('click', () => {
         if (!selectedId || !visitsFor(selectedId).length) return;
         const name = countryName(selectedId);
-        if (!confirm(`Delete all trips to ${name}? This cannot be undone.`)) return;
+        if (!confirm(`Delete all trips to ${name}?`)) return;
+        const previousState = structuredClone(state);
         delete state.countries[selectedId];
         stopEditingVisit();
         persistState({ renderDialogHistory: true });
-        showToast(`All trips to ${name} were deleted`);
+        showUndoToast(`All trips to ${name} were deleted`, previousState, { renderDialogHistory: true });
       });
 
       document.querySelector('#countryList').addEventListener('click', event => {
+        const emptyAction = event.target.closest('[data-empty-action]');
+        if (emptyAction?.dataset.emptyAction === 'browse') {
+          showAllCountries = true;
+          updateUi();
+          return;
+        }
         const openButton = event.target.closest('[data-country]');
         if (openButton) {
           openCountry(openButton.dataset.country);
@@ -2671,6 +2805,7 @@
       document.querySelector('#openStatistics').addEventListener('click', () => openStatisticsView());
       document.querySelector('#openShareCardMain').addEventListener('click', () => openShareCard('all'));
       document.querySelector('#backToMap').addEventListener('click', () => returnToMap());
+      document.querySelector('#statisticsStartMap').addEventListener('click', () => returnToMap(() => document.querySelector('#search').focus()));
       document.querySelector('#openShareCard').addEventListener('click', () => openShareCard(statisticsPeriod));
       document.querySelector('#closeShareDialog').addEventListener('click', () => shareDialog.close());
       document.querySelector('#cancelShareCard').addEventListener('click', () => shareDialog.close());
@@ -2695,7 +2830,7 @@
       document.querySelector('#shareShareCard').addEventListener('click', async () => {
         try {
           const file = shareCanvasFile();
-          await navigator.share({ files: [file], title: document.querySelector('#shareTitle').value.trim() || 'My World Map' });
+          await navigator.share({ files: [file], title: document.querySelector('#shareTitle').value.trim() || 'Your World, Mapped' });
         } catch (error) {
           if (error?.name !== 'AbortError') showToast('This image could not be shared', 'error');
         }
@@ -2822,16 +2957,18 @@
         if (showWishlistOnly) {
           const wishlistCount = wishlistIds().filter(id => !isHome(id)).length;
           if (!wishlistCount || !confirm(`Remove ${wishlistCount} wishlist ${englishPlural(wishlistCount, 'place')}? Planned trips will stay.`)) return;
+          const previousState = structuredClone(state);
           state.wishlist = [];
           const hasPlans = Object.keys(state.countries).some(hasPlannedTrip);
           persistState();
-          showToast(hasPlans ? 'Wishlist cleared · Planned trips kept' : 'Wishlist cleared');
+          showUndoToast(hasPlans ? 'Wishlist cleared · Planned trips kept' : 'Wishlist cleared', previousState);
           return;
         }
-        if (!Object.keys(state.countries).length || !confirm('Delete all saved trips? This cannot be undone.')) return;
+        if (!Object.keys(state.countries).length || !confirm('Delete all saved trips?')) return;
+        const previousState = structuredClone(state);
         state = { version: 2, countries: {}, homeCountryId: state.homeCountryId, wishlist: wishlistIds() };
         persistState();
-        showToast('All trips cleared');
+        showUndoToast('All trips cleared', previousState);
       });
 
       document.addEventListener('keydown', event => {

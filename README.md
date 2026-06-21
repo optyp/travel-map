@@ -1,6 +1,6 @@
-# My World Map
+# Your World, Mapped
 
-**My World Map** is a free, browser-based travel tracker for building a personal map of visited countries and territories. Record past and planned trips, remember as much or as little of the date as you want, explore detailed travel statistics, and create shareable map cards without exposing private notes.
+**Your World, Mapped** is a free, browser-based travel tracker for building a personal map of visited countries and territories. Record past and planned trips, remember as much or as little of the date as you want, explore detailed travel statistics, and create shareable map cards without exposing private notes.
 
 The app works without registration. Travel data is saved locally by default, while optional Google sign-in adds cloud sync across devices.
 
@@ -92,7 +92,7 @@ As with any browser application, clearing site storage removes anonymous local d
 
 ## Technology
 
-My World Map is intentionally lightweight and has no build step.
+Your World, Mapped is intentionally lightweight and has no build step.
 
 - Semantic HTML, modern CSS, and vanilla JavaScript
 - [D3.js](https://d3js.org/) for geographic rendering, projection, zooming, and interaction
