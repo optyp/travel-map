@@ -9,28 +9,28 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://optyp.github.io/travel-map/">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Your World, Mapped">
+  <meta property="og:site_name" content="Your World Map">
   <meta property="og:locale" content="en_US">
-  <meta property="og:title" content="Your World, Mapped — Visited Countries Map &amp; Travel Tracker">
+  <meta property="og:title" content="Your World Map — Visited Countries Map &amp; Travel Tracker">
   <meta property="og:description" content="Track completed and planned trips, explore travel statistics, build a wishlist, create share cards, and optionally sync across devices.">
   <meta property="og:url" content="https://optyp.github.io/travel-map/">
   <meta property="og:image" content="https://optyp.github.io/travel-map/social-preview.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Your World, Mapped travel tracker with a world map and highlighted countries">
+  <meta property="og:image:alt" content="Your World Map travel tracker with a world map and highlighted countries">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Your World, Mapped — Visited Countries Map &amp; Travel Tracker">
+  <meta name="twitter:title" content="Your World Map — Visited Countries Map &amp; Travel Tracker">
   <meta name="twitter:description" content="Track completed and planned trips, explore travel statistics, build a wishlist, and optionally sync across devices.">
   <meta name="twitter:image" content="https://optyp.github.io/travel-map/social-preview.png">
-  <meta name="twitter:image:alt" content="Your World, Mapped travel tracker with a world map and highlighted countries">
-  <title>Your World, Mapped — Visited Countries Map &amp; Travel Tracker</title>
+  <meta name="twitter:image:alt" content="Your World Map travel tracker with a world map and highlighted countries">
+  <title>Your World Map — Visited Countries Map &amp; Travel Tracker</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "Your World, Mapped",
+      "name": "Your World Map",
       "url": "https://optyp.github.io/travel-map/",
       "image": "https://optyp.github.io/travel-map/social-preview.png",
       "description": "A free interactive visited-countries map and travel tracker for recording completed and planned trips, exploring personal travel statistics, building a wishlist, creating share cards, and optionally syncing across devices.",
@@ -190,7 +190,8 @@
       backdrop-filter: blur(20px);
     }
 
-    .brand-row { display: flex; align-items: center; gap: 12px; }
+    .brand-row { display: flex; align-items: center; gap: 10px; }
+    .brand-row > div { min-width: 0; }
     .mark {
       display: grid;
       width: 42px;
@@ -223,7 +224,7 @@
     html[data-theme="dark"] .theme-icon-moon { display: none; }
     html[data-theme="dark"] .theme-icon-sun { display: block; }
     .eyebrow { margin: 0 0 2px; color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
-    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 25px; line-height: 1; font-weight: 600; }
+    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 24px; line-height: 1; font-weight: 600; white-space: nowrap; }
 
     .intro { margin: 22px 0 20px; color: var(--muted); font-size: 14px; line-height: 1.55; }
     .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
@@ -902,7 +903,7 @@
       .statistics-header { align-items: flex-start; }
       .statistics-grid { display: block; }
       .statistics-card { margin-bottom: 10px; }
-      .statistics-overview { display: grid; grid-template-columns: repeat(2, 1fr); }
+      .statistics-overview { display: grid; grid-template-columns: repeat(2, 1fr); margin-bottom: 10px; }
       .plans-layout { grid-template-columns: 1fr; }
     }
 
@@ -979,7 +980,7 @@
             <circle cx="12" cy="10" r="2.5"></circle>
           </svg>
         </div>
-        <div><p class="eyebrow">Travel atlas</p><h1>Your World, Mapped</h1></div>
+        <div><p class="eyebrow">Travel atlas</p><h1>Your World Map</h1></div>
         <button class="theme-toggle" id="themeToggle" data-theme-toggle type="button" aria-label="Switch to dark mode" title="Switch theme">
           <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.4 8.4 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"></path></svg>
           <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.7"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
@@ -2401,7 +2402,7 @@
 
         context.fillStyle = palette.muted;
         context.font = '500 13px Inter, system-ui, sans-serif';
-        context.fillText('Your World, Mapped', 68, 558);
+        context.fillText('Your World Map', 68, 558);
       }
 
       function shareCanvasFile() {
@@ -2446,7 +2447,7 @@
         if (pushHistory && location.hash !== '#statistics') history.pushState({ view: 'statistics' }, '', '#statistics');
         document.querySelector('.app').hidden = true;
         document.querySelector('#statisticsView').hidden = false;
-        document.title = 'Travel Statistics · Your World, Mapped';
+        document.title = 'Travel Statistics · Your World Map';
         renderStatistics();
         document.querySelector('#statisticsView').scrollTop = 0;
         requestAnimationFrame(() => document.querySelector('#statisticsTitle').focus({ preventScroll: true }));
@@ -2455,7 +2456,7 @@
       function showMapView(action) {
         document.querySelector('#statisticsView').hidden = true;
         document.querySelector('.app').hidden = false;
-        document.title = 'Your World, Mapped — Map of Visited Countries';
+        document.title = 'Your World Map — Map of Visited Countries';
         requestAnimationFrame(() => {
           resizeMap();
           if (action) setTimeout(action, 40);
@@ -2830,7 +2831,7 @@
       document.querySelector('#shareShareCard').addEventListener('click', async () => {
         try {
           const file = shareCanvasFile();
-          await navigator.share({ files: [file], title: document.querySelector('#shareTitle').value.trim() || 'Your World, Mapped' });
+          await navigator.share({ files: [file], title: document.querySelector('#shareTitle').value.trim() || 'Your World Map' });
         } catch (error) {
           if (error?.name !== 'AbortError') showToast('This image could not be shared', 'error');
         }
