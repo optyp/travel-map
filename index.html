@@ -228,7 +228,7 @@
     .eyebrow { margin: 0 0 2px; color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
     h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 24px; line-height: 1; font-weight: 600; white-space: nowrap; }
 
-    .intro { margin: 22px 0 20px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .intro { margin: 18px 0 14px; color: var(--muted); font-size: 14px; line-height: 1.55; }
     .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
     .stat {
       min-width: 0;
@@ -239,7 +239,12 @@
     }
     .stat strong { display: block; font-family: Georgia, serif; font-size: 30px; font-weight: 500; line-height: 1; }
     .stat span { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
-    .travel-progress { margin: -7px 1px 17px; }
+    .compact-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 0 1px 13px; }
+    .compact-stats .stat { padding: 2px 16px 2px 0; border: 0; border-radius: 0; background: transparent; }
+    .compact-stats .stat + .stat { padding-right: 0; padding-left: 18px; border-left: 1px solid var(--line); }
+    .compact-stats .stat strong { font-size: 24px; font-weight: 500; }
+    .compact-stats .stat span { margin-top: 4px; font-size: 11px; }
+    .travel-progress { margin: 0 1px 17px; }
     .progress-copy { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; color: var(--muted); font-size: 10px; }
     .progress-copy strong { color: var(--visited); font-size: 10px; }
     .progress-track { height: 5px; overflow: hidden; border-radius: 999px; background: rgba(23,34,31,.08); }
@@ -268,11 +273,11 @@
     .account-menu-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 11px; }
     .account-menu-actions button { min-height: 30px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 9px; background: transparent; font-size: 10px; cursor: pointer; }
     .account-menu-actions .nickname-save { border-color: transparent; color: white; background: var(--visited); font-weight: 700; }
-    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: -3px 0 14px; }
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
     .quick-action { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 11px; color: var(--muted); background: rgba(255,255,255,.48); font-size: 11px; cursor: pointer; }
     .quick-action:hover, .quick-action:focus-visible, .quick-action.active { color: var(--ink); border-color: color-mix(in srgb, var(--wishlist) 45%, transparent); background: color-mix(in srgb, var(--wishlist) 10%, transparent); outline: none; }
     .quick-action strong { min-width: 18px; padding: 2px 5px; border-radius: 999px; color: white; background: var(--wishlist); font-size: 9px; }
-    .home-section { position: relative; margin: -2px 0 14px; }
+    .home-section { position: relative; }
     .home-button {
       width: 100%;
       display: flex;
@@ -323,23 +328,24 @@
     .list-title h2 { margin: 0; font-size: 13px; letter-spacing: .03em; }
     .text-button { padding: 4px 0; border: 0; color: var(--visited); background: none; font-size: 12px; cursor: pointer; }
     .text-button:hover { color: var(--visited-hover); }
-    .list-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: -2px 0 8px; }
+    .list-tools { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: -2px 2px 5px; padding-bottom: 7px; border-bottom: 1px solid var(--line); }
     .list-tool {
       min-width: 0;
-      height: 32px;
-      padding: 0 9px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
+      width: auto;
+      height: 27px;
+      padding: 0;
+      border: 0;
+      border-radius: 6px;
       color: var(--muted);
-      background: rgba(255,255,255,.5);
+      background: transparent;
       font-size: 10px;
       outline: none;
       cursor: pointer;
     }
-    .list-tool:hover, .list-tool:focus-visible { color: var(--ink); border-color: rgba(38,124,112,.35); }
+    .list-tool:hover, .list-tool:focus-visible { color: var(--ink); }
     .list-tool:disabled { opacity: .48; cursor: not-allowed; }
     .list-tool option { color: var(--ink); background: white; }
-    #yearFilter { padding-top: 1px; }
+    #yearFilter { max-width: 120px; margin-left: auto; padding: 1px 18px 0 4px; }
     .country-list { min-height: 0; flex: 1; overflow: auto; margin: 0 -8px; padding: 0 8px 8px; scrollbar-width: thin; }
     .empty-list { padding: 28px 10px; color: var(--muted); text-align: center; font-size: 13px; line-height: 1.5; }
     .empty-list-onboarding { display: grid; justify-items: center; gap: 7px; padding: 30px 12px; }
@@ -373,7 +379,31 @@
     .country-copy { min-width: 0; flex: 1; }
     .country-name { display: block; overflow: hidden; font-size: 13px; font-weight: 680; text-overflow: ellipsis; white-space: nowrap; }
     .country-date { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
-    .sidebar-footer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .sidebar-utilities { flex: 0 0 auto; margin-top: 8px; border-top: 1px solid var(--line); }
+    .sidebar-disclosure { border-bottom: 1px solid var(--line); }
+    .sidebar-disclosure:last-child { border-bottom: 0; }
+    .sidebar-disclosure summary {
+      display: flex;
+      min-height: 42px;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 6px;
+      border-radius: 9px;
+      color: color-mix(in srgb, var(--ink) 72%, var(--muted));
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      list-style: none;
+    }
+    .sidebar-disclosure summary:hover, .sidebar-disclosure summary:focus-visible { color: var(--ink); background: color-mix(in srgb, var(--visited) 7%, transparent); outline: none; }
+    .sidebar-disclosure summary::-webkit-details-marker { display: none; }
+    .sidebar-disclosure summary::after { content: ""; width: 6px; height: 6px; margin-left: auto; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .16s ease; }
+    .sidebar-disclosure[open] summary { color: var(--ink); }
+    .sidebar-disclosure[open] summary::after { transform: rotate(225deg) translate(-1px, -1px); }
+    .disclosure-icon { width: 17px; color: var(--visited); text-align: center; }
+    .disclosure-content { padding: 2px 0 11px; }
+    .settings-label { display: block; margin: 12px 2px 7px; color: var(--muted); font-size: 9px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .settings-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; padding-top: 10px; border-top: 1px solid var(--line); }
     .soft-button {
       min-width: 0;
       padding: 9px 5px;
@@ -882,7 +912,11 @@
     html[data-theme="dark"] .google-sign-in { color: #17221f; background: #f6f7f8; }
     html[data-theme="dark"] .account-menu { background: rgba(30,34,42,.98); box-shadow: 0 18px 42px rgba(0,0,0,.38); }
     html[data-theme="dark"] .nickname-input { color: var(--ink); background: #252a33; }
+    html[data-theme="dark"] .compact-stats .stat { background: transparent; }
     html[data-theme="dark"] .quick-action { background: rgba(255,255,255,.045); }
+    html[data-theme="dark"] .list-tool { color: var(--muted); background: transparent; }
+    html[data-theme="dark"] .list-tool:hover,
+    html[data-theme="dark"] .list-tool:focus-visible { color: var(--ink); }
     html[data-theme="dark"] .list-tool option { color: #f0f2f5; background: #252a33; }
     html[data-theme="dark"] .progress-track { background: rgba(255,255,255,.09); }
     html[data-theme="dark"] .theme-toggle:hover,
@@ -1023,7 +1057,7 @@
       .stat { padding: 11px 12px; }
       .stat strong { font-size: 25px; }
       .country-list { min-height: 100px; max-height: none; flex: none; overflow: visible; }
-      .sidebar-footer { margin-top: 12px; }
+      .sidebar-utilities { margin-top: 12px; }
       .map-shell {
         height: calc(100vh - 16px);
         height: calc(100dvh - 16px);
@@ -1058,7 +1092,7 @@
       </div>
       <p class="intro">Every place leaves a mark. Keep yours on the map.</p>
 
-      <section class="stats" aria-label="Travel statistics">
+      <section class="stats compact-stats" aria-label="Travel statistics">
         <div class="stat"><strong id="countryCount">0</strong><span>places visited</span></div>
         <div class="stat"><strong id="visitCount">0</strong><span>trips saved</span></div>
       </section>
@@ -1066,44 +1100,55 @@
         <div class="progress-copy"><span id="progressLabel">0 of 0 mapped places</span><strong id="progressPercent">0%</strong></div>
         <div class="progress-track"><span class="progress-fill" id="progressFill"></span></div>
       </div>
-      <div class="quick-actions">
-        <button class="quick-action" id="openStatistics" type="button"><span aria-hidden="true">▥</span> Statistics</button>
-        <button class="quick-action" id="openAchievements" type="button"><span aria-hidden="true">◇</span> Achievements</button>
-        <button class="quick-action" id="openShareCardMain" type="button"><span aria-hidden="true">↗</span> Share card</button>
-        <button class="quick-action" id="showWishlist" type="button"><span aria-hidden="true">☆</span> Wishlist <strong id="wishlistCount">0</strong></button>
-      </div>
-
-      <section class="home-section" aria-label="Home country">
-        <button class="home-button" id="homeButton" type="button" aria-expanded="false" aria-controls="homePicker">
-          <span class="home-icon" aria-hidden="true">⌂</span>
-          <span class="home-copy"><small>Home country</small><strong id="homeCountryName">Choose your home</strong></span>
-          <span class="home-change" id="homeAction">Set</span>
-        </button>
-        <div class="home-picker" id="homePicker" hidden>
-          <input class="home-search" id="homeSearch" type="search" placeholder="Search countries" autocomplete="off" aria-label="Search home country">
-          <div class="home-options" id="homeOptions"></div>
-          <div class="home-picker-footer"><button class="home-remove" id="removeHome" type="button">Remove home country</button></div>
-        </div>
-      </section>
-
       <div class="search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
         <input class="search" id="search" type="search" placeholder="Find a place" autocomplete="off" aria-label="Find a place" aria-keyshortcuts="/" title="Press / to search">
       </div>
 
-      <div class="list-title"><h2>My places</h2><button class="text-button" id="showAll" type="button">Show all</button></div>
+      <div class="list-title"><h2>My places</h2><button class="text-button" id="showAll" type="button" hidden>Show visited</button></div>
       <div class="list-tools">
         <button class="list-tool" id="sortPlaces" type="button" aria-label="Sort places">Sort: recent</button>
         <select class="list-tool" id="yearFilter" aria-label="Filter trips by year"><option value="all">All dates</option></select>
       </div>
       <div class="country-list" id="countryList" aria-live="polite"></div>
 
-      <footer class="sidebar-footer">
-        <button class="soft-button" id="exportButton" type="button">Backup</button>
-        <button class="soft-button" id="restoreButton" type="button">Restore</button>
-        <button class="soft-button" id="resetButton" type="button">Clear all</button>
-        <input id="restoreInput" type="file" accept=".json,application/json" hidden>
-      </footer>
+      <div class="sidebar-utilities">
+        <details class="sidebar-disclosure" id="sidebarTools">
+          <summary><span class="disclosure-icon" aria-hidden="true">◇</span>Insights &amp; tools</summary>
+          <div class="disclosure-content">
+            <div class="quick-actions">
+              <button class="quick-action" id="openStatistics" type="button"><span aria-hidden="true">▥</span> Statistics</button>
+              <button class="quick-action" id="openAchievements" type="button"><span aria-hidden="true">◇</span> Achievements</button>
+              <button class="quick-action" id="openShareCardMain" type="button"><span aria-hidden="true">↗</span> Share card</button>
+              <button class="quick-action" id="showWishlist" type="button"><span aria-hidden="true">☆</span> Wishlist <strong id="wishlistCount">0</strong></button>
+            </div>
+          </div>
+        </details>
+        <details class="sidebar-disclosure" id="sidebarSettings">
+          <summary><span class="disclosure-icon" aria-hidden="true">⚙</span>Settings</summary>
+          <div class="disclosure-content">
+            <section class="home-section" aria-label="Home country">
+              <button class="home-button" id="homeButton" type="button" aria-expanded="false" aria-controls="homePicker">
+                <span class="home-icon" aria-hidden="true">⌂</span>
+                <span class="home-copy"><small>Home country</small><strong id="homeCountryName">Choose your home</strong></span>
+                <span class="home-change" id="homeAction">Set</span>
+              </button>
+              <div class="home-picker" id="homePicker" hidden>
+                <input class="home-search" id="homeSearch" type="search" placeholder="Search countries" autocomplete="off" aria-label="Search home country">
+                <div class="home-options" id="homeOptions"></div>
+                <div class="home-picker-footer"><button class="home-remove" id="removeHome" type="button">Remove home country</button></div>
+              </div>
+            </section>
+            <span class="settings-label">Your data</span>
+            <div class="settings-actions">
+              <button class="soft-button" id="exportButton" type="button">Backup</button>
+              <button class="soft-button" id="restoreButton" type="button">Restore</button>
+              <button class="soft-button" id="resetButton" type="button">Clear all</button>
+              <input id="restoreInput" type="file" accept=".json,application/json" hidden>
+            </div>
+          </div>
+        </details>
+      </div>
     </aside>
 
     <section class="map-shell" id="mapPanel" tabindex="-1" aria-label="Interactive world map">
@@ -1891,9 +1936,9 @@
         const plans = [...mapPlannedVisitsFor(feature.id)].sort((a, b) => a.date.localeCompare(b.date));
         const details = [];
         if (isHome(feature.id)) details.push('Home country');
-        if (plans.length) details.push(`Planned · ${formatVisitDate(plans[0].date)}`);
+        if (plans.length) details.push(plans[0].date ? `Planned · ${formatVisitDate(plans[0].date)}` : 'Planned');
         else if (mapWishlistVisible(feature.id)) details.push('Wishlist');
-        if (visits.length) details.push(`${visits.length} ${englishPlural(visits.length, 'trip')} · ${formatVisitDate(visits[0].date)}`);
+        if (visits.length) details.push(`${visits.length} ${englishPlural(visits.length, 'trip')}${visits[0].date ? ` · ${formatVisitDate(visits[0].date)}` : ''}`);
         else if (!plans.length && (timelineActive || mapPeriod !== 'all') && visitsFor(feature.id).length) details.push(timelineActive ? `No trips by ${timelineFrame.label}` : 'No trips in this period');
         else if (!plans.length) details.push('Click to add a trip');
         tooltip.innerHTML = `<strong>${escapeHtml(countryName(feature))}</strong><small>${escapeHtml(details.join(' · '))}</small>`;
@@ -2724,8 +2769,8 @@
       function renderCountryList() {
         const query = document.querySelector('#search').value.trim().toLocaleLowerCase('en');
         const showAllButton = document.querySelector('#showAll');
-        showAllButton.textContent = showAllCountries || showWishlistOnly ? 'Show visited' : 'Show all';
-        showAllButton.setAttribute('aria-expanded', String(showAllCountries));
+        showAllButton.hidden = !showWishlistOnly;
+        showAllButton.textContent = 'Show visited';
         const items = places
           .filter(place => !isHome(place.id))
           .filter(place => showWishlistOnly ? isWishlisted(place.id) : showAllCountries || completedVisitsFor(place.id).length || query)
@@ -2745,10 +2790,10 @@
           const visits = [...completedVisitsFor(feature.id)].sort(sortVisits);
           const plans = [...plannedVisitsFor(feature.id)].sort((a, b) => a.date.localeCompare(b.date));
           let details = visits.length
-            ? `${visits.length} ${englishPlural(visits.length, 'trip')} · ${formatVisitDate(visits[0].date)}`
-            : plans.length ? `Planned · ${formatVisitDate(plans[0].date)}`
-            : isWishlisted(feature.id) ? 'Wishlist · No date planned' : 'Not visited yet';
-          if (visits.length && plans.length) details += ` · Planned ${formatVisitDate(plans[0].date)}`;
+            ? `${visits.length} ${englishPlural(visits.length, 'trip')}${visits[0].date ? ` · ${formatVisitDate(visits[0].date)}` : ''}`
+            : plans.length ? (plans[0].date ? `Planned · ${formatVisitDate(plans[0].date)}` : 'Planned')
+            : isWishlisted(feature.id) ? 'Wishlist' : 'Not visited yet';
+          if (visits.length && plans.length) details += plans[0].date ? ` · Planned ${formatVisitDate(plans[0].date)}` : ' · Planned';
           const name = countryName(feature);
           return `<div class="country-item">
             <button class="country-focus" type="button" data-focus-country="${feature.id}" title="Show ${escapeHtml(name)} on the map">
@@ -2998,12 +3043,8 @@
       });
       document.querySelector('#search').addEventListener('input', () => renderCountryList());
       document.querySelector('#showAll').addEventListener('click', () => {
-        if (showWishlistOnly) {
-          showWishlistOnly = false;
-          showAllCountries = false;
-        } else {
-          showAllCountries = !showAllCountries;
-        }
+        showWishlistOnly = false;
+        showAllCountries = false;
         updateUi();
       });
       document.querySelector('#showWishlist').addEventListener('click', () => {
