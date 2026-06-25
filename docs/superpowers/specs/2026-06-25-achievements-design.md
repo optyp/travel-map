@@ -2,13 +2,13 @@
 
 ## Goal
 
-Add a dedicated Achievements dialog that clearly communicates the user's current Traveler achievement level and progress toward the next level.
+Add a dedicated Achievements page that clearly communicates the user's current Traveler achievement level and progress toward the next level.
 
 ## Entry Point
 
 - Add an `Achievements` button to the main quick actions.
-- Opening it displays a modal dialog consistent with the existing country and Share Card dialogs.
-- The dialog is read-only and updates from current travel data each time it opens.
+- Opening it displays a full page consistent with the existing Statistics page.
+- The page is read-only and updates from current travel data each time it opens.
 
 ## Traveler Calculation
 
@@ -36,7 +36,7 @@ Add a dedicated Achievements dialog that clearly communicates the user's current
 
 ## Accessibility and Responsive Behavior
 
-- Use a real dialog with an accessible title and close button.
+- Use a dedicated view with an accessible title and Back to map action.
 - Keep progress meaning available as text rather than relying only on color.
 - Ensure keyboard focus is visible.
 - Stack the emblem and progress content on narrow screens.

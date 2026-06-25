@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add an Achievements dialog with one Traveler achievement based only on unique completed-visit countries excluding the home country.
+**Goal:** Add a dedicated Achievements page with one Traveler achievement based only on unique completed-visit countries excluding the home country.
 
-**Architecture:** Put threshold and progress calculations in a pure browser/Node utility. Keep dialog markup, styling, and state-to-view rendering in the existing `index.html`, following current modal and quick-action patterns.
+**Architecture:** Put threshold and progress calculations in a pure browser/Node utility. Keep page markup, styling, navigation, and state-to-view rendering in the existing `index.html`, following the Statistics view pattern.
 
 **Tech Stack:** Vanilla HTML/CSS/JavaScript.
 
@@ -29,16 +29,16 @@
 
 - [ ] Implement the pure calculation utility for locked state, every threshold boundary, duplicate IDs, home-country exclusion, and Level 5 completion.
 
-### Task 2: Achievements Dialog
+### Task 2: Achievements Page
 
 **Files:**
 - Modify: `index.html`
 
 **Interfaces:**
 - Consumes: unique IDs from `completedVisitsFor`, `state.homeCountryId`, and `AchievementsUtils.travelerAchievement`.
-- Produces: `#achievementsDialog`, `#openAchievements`, and `renderAchievements()`.
+- Produces: `#achievementsView`, `#openAchievements`, and `renderAchievements()`.
 
-- [ ] Add the quick action and accessible dialog markup.
+- [ ] Add the quick action and accessible dedicated-view markup.
 - [ ] Add passport-stamp-inspired responsive styles with locked and completed states.
 - [ ] Implement `renderAchievements()` and dialog open/close handlers.
 

@@ -77,7 +77,7 @@ All-time cards can show the full wishlist. Year-specific cards show wishlist cou
 
 ## Achievements
 
-The Achievements window currently contains one achievement: Traveler. It is locked at zero qualifying countries and unlocks Levels 1 through 5 at 1, 5, 10, 20, and 50 visited countries.
+The dedicated Achievements page currently contains one achievement: Traveler. It is locked at zero qualifying countries and unlocks Levels 1 through 5 at 1, 5, 10, 20, and 50 visited countries.
 
 Traveler counts unique countries with completed trips. Wishlist entries, planned-only countries, repeated trips to the same country, and the selected home country do not count. The interface shows the current level, milestone trail, and progress needed for the next level.
 

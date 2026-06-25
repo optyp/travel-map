@@ -63,7 +63,7 @@ All-time cards can show the full wishlist. Year-specific cards show wishlist cou
 
 ## Achievements
 
-The Achievements window currently contains the Traveler achievement. It advances through five levels at 1, 5, 10, 20, and 50 visited countries and shows progress toward the next milestone.
+The dedicated Achievements page currently contains the Traveler achievement. It advances through five levels at 1, 5, 10, 20, and 50 visited countries and shows progress toward the next milestone.
 
 Only countries with completed trips count. Wishlist entries, planned-only countries, duplicate trips to the same country, and the selected home country do not increase Traveler progress.
 
