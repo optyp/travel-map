@@ -13,6 +13,7 @@ The app works without registration. Travel data is saved locally by default, whi
 - Flexible dates: month and year, year only, or date unknown
 - Separate completed and planned trips
 - Wishlist for places you want to visit
+- Traveler achievement levels based on completed countries visited
 - A distinct home-country state that does not count as a trip
 - Year-by-year map filtering and animated travel history
 - Visit-intensity colours for frequently revisited places
@@ -59,6 +60,12 @@ Statistics can be viewed for all time or filtered to a specific year. Transconti
 The app can generate a polished 1200 × 630 travel card directly in the browser. Users can choose a period, light or dark styling, a custom headline, and whether to include wishlist countries before downloading the result as a PNG or sharing it through supported devices. Wishlist inclusion is enabled automatically when the card is opened from the wishlist view.
 
 All-time cards can show the full wishlist. Year-specific cards show wishlist countries only when they have a planned trip assigned to that year. Share cards include the map and high-level completed-travel totals; personal notes and detailed trip dates are never included.
+
+## Achievements
+
+The Achievements window currently contains the Traveler achievement. It advances through five levels at 1, 5, 10, 20, and 50 visited countries and shows progress toward the next milestone.
+
+Only countries with completed trips count. Wishlist entries, planned-only countries, duplicate trips to the same country, and the selected home country do not increase Traveler progress.
 
 ## Saving and sync
 

@@ -19,6 +19,7 @@ The interface and project documentation are in English.
 - Optional note attached to each trip
 - Three levels of date precision: month and year, year only, or unknown date
 - Wishlist for places the user wants to visit
+- Traveler achievement levels based on completed countries visited
 - Planned trips automatically included in the wishlist experience
 - Separate home-country state that does not count as a trip
 - Search, map focus, zoom controls, and selectable small-place markers
@@ -73,6 +74,12 @@ Transcontinental countries count toward every applicable continent by default. U
 The application generates a 1200 by 630 pixel travel card locally in the browser. The user can select an all-time or yearly period, choose light or dark styling, enter an optional custom headline, and optionally include wishlist countries. Opening the card from the wishlist view enables wishlist inclusion automatically.
 
 All-time cards can show the full wishlist. Year-specific cards show wishlist countries only when they have a planned trip assigned to that year. The card can be downloaded as a PNG or shared through the device's native sharing interface when supported. It contains the map and high-level completed-travel totals but never includes personal trip notes or detailed trip dates.
+
+## Achievements
+
+The Achievements window currently contains one achievement: Traveler. It is locked at zero qualifying countries and unlocks Levels 1 through 5 at 1, 5, 10, 20, and 50 visited countries.
+
+Traveler counts unique countries with completed trips. Wishlist entries, planned-only countries, repeated trips to the same country, and the selected home country do not count. The interface shows the current level, milestone trail, and progress needed for the next level.
 
 ## Local storage and backups
 

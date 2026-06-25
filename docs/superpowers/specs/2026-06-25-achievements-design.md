@@ -42,9 +42,8 @@ Add a dedicated Achievements dialog that clearly communicates the user's current
 - Stack the emblem and progress content on narrow screens.
 - Respect the existing light and dark themes.
 
-## Architecture and Testing
+## Architecture
 
 - Add a small UMD-style `achievements-utils.js` module for pure Traveler calculations.
-- Test thresholds, duplicate IDs, home-country exclusion, locked state, and Level 5 completion with Node's built-in test runner.
-- Add an integration test that checks the dialog, quick action, rendering hooks, and utility loading.
-- Validate the rendered dialog in the in-app browser at desktop and mobile sizes.
+- Keep the calculation independent from the dialog rendering so its rules remain easy to inspect and maintain.
+- User validation is intentionally left to manual testing.

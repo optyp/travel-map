@@ -65,6 +65,7 @@
   </script>
   <script src="./d3.min.js"></script>
   <script src="./share-card-utils.js"></script>
+  <script src="./achievements-utils.js"></script>
   <style>
     :root {
       --ink: #17221f;
@@ -271,8 +272,6 @@
     .quick-action { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 34px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 11px; color: var(--muted); background: rgba(255,255,255,.48); font-size: 11px; cursor: pointer; }
     .quick-action:hover, .quick-action:focus-visible, .quick-action.active { color: var(--ink); border-color: color-mix(in srgb, var(--wishlist) 45%, transparent); background: color-mix(in srgb, var(--wishlist) 10%, transparent); outline: none; }
     .quick-action strong { min-width: 18px; padding: 2px 5px; border-radius: 999px; color: white; background: var(--wishlist); font-size: 9px; }
-    #showWishlist { grid-column: 1 / -1; }
-
     .home-section { position: relative; margin: -2px 0 14px; }
     .home-button {
       width: 100%;
@@ -802,6 +801,65 @@
     .share-primary { border: 0; color: white; background: var(--visited); }
     .share-primary:hover { background: var(--visited-hover); }
     .share-primary[hidden] { display: none; }
+
+    #achievementsDialog { width: min(760px, calc(100% - 28px)); }
+    .achievement-card {
+      --achievement-color: var(--wishlist);
+      display: grid;
+      grid-template-columns: 210px minmax(0, 1fr);
+      gap: 28px;
+      align-items: center;
+      padding: 28px;
+      border: 1px solid color-mix(in srgb, var(--achievement-color) 28%, var(--line));
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 13% 14%, color-mix(in srgb, var(--achievement-color) 14%, transparent), transparent 34%),
+        color-mix(in srgb, var(--achievement-color) 4%, rgba(255,255,255,.58));
+    }
+    .achievement-card.locked { --achievement-color: #98a09c; filter: saturate(.55); }
+    .achievement-card.complete { --achievement-color: #d7833f; }
+    .achievement-emblem {
+      position: relative;
+      width: 184px;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      margin: auto;
+      border: 2px solid color-mix(in srgb, var(--achievement-color) 68%, transparent);
+      border-radius: 50%;
+      color: var(--achievement-color);
+      background: color-mix(in srgb, var(--achievement-color) 9%, transparent);
+      box-shadow: inset 0 0 0 9px color-mix(in srgb, var(--achievement-color) 7%, transparent);
+      transform: rotate(-3deg);
+    }
+    .achievement-emblem::before, .achievement-emblem::after { content: ""; position: absolute; inset: 15px; border: 1px dashed currentColor; border-radius: 50%; opacity: .5; }
+    .achievement-emblem::after { inset: 30px; border-style: solid; opacity: .2; }
+    .achievement-emblem svg { width: 62px; height: 62px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .achievement-lock { position: absolute; right: 18px; bottom: 21px; width: 32px; height: 32px; display: none; place-items: center; border-radius: 50%; color: white; background: var(--achievement-color); font-size: 14px; transform: rotate(3deg); }
+    .achievement-lock svg { width: 17px; height: 17px; }
+    .achievement-card.locked .achievement-lock { display: grid; }
+    .achievement-copy { min-width: 0; }
+    .achievement-kicker { margin: 0 0 7px; color: var(--achievement-color); font-size: 10px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .achievement-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+    .achievement-title-row h3 { margin: 0; font-family: Georgia, serif; font-size: 34px; font-weight: 500; }
+    .achievement-level { flex: 0 0 auto; padding: 5px 9px; border-radius: 999px; color: white; background: var(--achievement-color); font-size: 10px; font-weight: 800; letter-spacing: .04em; }
+    .achievement-card.locked .achievement-level { color: var(--muted); background: color-mix(in srgb, var(--achievement-color) 16%, transparent); }
+    .achievement-description { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .achievement-count { display: flex; align-items: baseline; gap: 7px; margin-top: 22px; }
+    .achievement-count strong { font-family: Georgia, serif; font-size: 38px; font-weight: 500; line-height: 1; }
+    .achievement-count span { color: var(--muted); font-size: 11px; }
+    .achievement-progress-copy { display: flex; justify-content: space-between; gap: 16px; margin-top: 16px; color: var(--muted); font-size: 10px; }
+    .achievement-progress-copy strong { color: var(--achievement-color); font-size: 10px; }
+    .achievement-progress-track { height: 7px; overflow: hidden; margin-top: 7px; border-radius: 999px; background: color-mix(in srgb, var(--achievement-color) 13%, transparent); }
+    .achievement-progress-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--achievement-color); transition: width .35s ease; }
+    .achievement-levels { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 22px; }
+    .achievement-levels::before { content: ""; position: absolute; top: 10px; left: 9%; right: 9%; height: 1px; background: var(--line); }
+    .achievement-step { position: relative; z-index: 1; display: grid; justify-items: center; gap: 6px; color: var(--muted); font-size: 9px; }
+    .achievement-step-dot { width: 21px; height: 21px; display: grid; place-items: center; border: 2px solid var(--panel); border-radius: 50%; color: white; background: #b7bdb9; box-shadow: 0 0 0 1px var(--line); font-size: 8px; font-weight: 800; }
+    .achievement-step.unlocked .achievement-step-dot { background: var(--achievement-color); }
+    .achievement-step.current .achievement-step-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--achievement-color) 22%, transparent); transform: scale(1.08); }
+    .achievement-step strong { color: inherit; font-size: 9px; }
+    .achievement-step.unlocked strong, .achievement-step.current { color: var(--achievement-color); }
     .toast-region { position: fixed; left: 50%; bottom: 24px; z-index: 100; transform: translateX(-50%); pointer-events: none; }
     .toast { min-width: 220px; max-width: min(420px, calc(100vw - 32px)); padding: 11px 15px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px; color: white; background: rgba(23,34,31,.94); box-shadow: 0 14px 35px rgba(0,0,0,.22); text-align: center; font-size: 12px; opacity: 0; transform: translateY(8px); transition: opacity .18s, transform .18s; }
     .toast.show { opacity: 1; transform: translateY(0); }
@@ -882,6 +940,7 @@
     html[data-theme="dark"] .share-field input,
     html[data-theme="dark"] .share-field select { color-scheme: dark; color: var(--ink); background: #252a33; }
     html[data-theme="dark"] .share-toggle { border-color: rgba(255,255,255,.08); background: #252a33; }
+    html[data-theme="dark"] .achievement-card { background: radial-gradient(circle at 13% 14%, color-mix(in srgb, var(--achievement-color) 15%, transparent), transparent 34%), rgba(255,255,255,.025); }
 
     body, .sidebar, .map-shell, dialog, .stat, .home-button, .search, .soft-button,
     .map-title, .legend, .marker-toggle, .map-control, .date-mode-button, .date-picker-body,
@@ -931,6 +990,10 @@
       .share-controls { grid-template-columns: 1fr; }
       .share-actions { display: grid; grid-template-columns: 1fr 1fr; }
       .share-actions button:last-child:nth-child(odd) { grid-column: 1 / -1; }
+      .achievement-card { grid-template-columns: 1fr; gap: 22px; padding: 22px 18px; }
+      .achievement-emblem { width: 150px; }
+      .achievement-title-row { align-items: flex-start; flex-direction: column; gap: 8px; }
+      .achievement-title-row h3 { font-size: 30px; }
     }
 
     @media (orientation: landscape) and (max-height: 600px) and (max-width: 1100px) {
@@ -1005,6 +1068,7 @@
       </div>
       <div class="quick-actions">
         <button class="quick-action" id="openStatistics" type="button"><span aria-hidden="true">▥</span> Statistics</button>
+        <button class="quick-action" id="openAchievements" type="button"><span aria-hidden="true">◇</span> Achievements</button>
         <button class="quick-action" id="openShareCardMain" type="button"><span aria-hidden="true">↗</span> Share card</button>
         <button class="quick-action" id="showWishlist" type="button"><span aria-hidden="true">☆</span> Wishlist <strong id="wishlistCount">0</strong></button>
       </div>
@@ -1201,6 +1265,35 @@
     </div>
   </dialog>
 
+  <dialog id="achievementsDialog" aria-labelledby="achievementsDialogTitle">
+    <div class="dialog-head">
+      <div><h2 id="achievementsDialogTitle">Achievements</h2><p>Milestones from the places you have explored</p></div>
+      <button class="icon-button" id="closeAchievementsDialog" type="button" aria-label="Close achievements"><svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button>
+    </div>
+    <div class="dialog-body">
+      <article class="achievement-card locked" id="travelerAchievement">
+        <div class="achievement-emblem" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="20"></circle><path d="M12 32h40M32 12c7 6 10 13 10 20s-3 14-10 20M32 12c-7 6-10 13-10 20s3 14 10 20"></path><path d="m43 20 8-5-3 9-8 4-4 8-3-3 4-9 6-4Z"></path></svg>
+          <span class="achievement-lock"><svg viewBox="0 0 24 24"><rect x="6" y="10" width="12" height="10" rx="2"></rect><path d="M8.5 10V7.5a3.5 3.5 0 0 1 7 0V10"></path></svg></span>
+        </div>
+        <div class="achievement-copy">
+          <p class="achievement-kicker">Country milestone</p>
+          <div class="achievement-title-row">
+            <h3>Traveler</h3>
+            <span class="achievement-level" id="travelerLevel">Locked</span>
+          </div>
+          <p class="achievement-description" id="travelerDescription">Visit your first country to unlock this achievement.</p>
+          <div class="achievement-count"><strong id="travelerCount">0</strong><span id="travelerCountLabel">countries visited</span></div>
+          <div class="achievement-progress-copy"><span id="travelerProgressText">1 country to unlock</span><strong id="travelerProgressPercent">0%</strong></div>
+          <div class="achievement-progress-track" id="travelerProgressTrack" role="progressbar" aria-label="Traveler achievement progress" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0">
+            <span class="achievement-progress-fill" id="travelerProgressFill"></span>
+          </div>
+          <div class="achievement-levels" id="travelerLevels" aria-label="Traveler achievement levels"></div>
+        </div>
+      </article>
+    </div>
+  </dialog>
+
   <dialog id="shareDialog" aria-labelledby="shareDialogTitle">
     <div class="dialog-head">
       <div><h2 id="shareDialogTitle">Create a share card</h2><p>A private snapshot of your map and totals</p></div>
@@ -1237,6 +1330,7 @@
       const mapSvg = d3.select('#map');
       const tooltip = document.querySelector('#tooltip');
       const dialog = document.querySelector('#countryDialog');
+      const achievementsDialog = document.querySelector('#achievementsDialog');
       const shareDialog = document.querySelector('#shareDialog');
       const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
       const visitDateFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -2455,6 +2549,58 @@
         return new File([bytes], 'my-world-map.png', { type: 'image/png' });
       }
 
+      function renderAchievements() {
+        const visitedCountryIds = Object.keys(state.countries).filter(id => completedVisitsFor(id).length);
+        const achievement = AchievementsUtils.travelerAchievement({
+          visitedCountryIds,
+          homeCountryId: state.homeCountryId
+        });
+        const card = document.querySelector('#travelerAchievement');
+        const levelText = achievement.locked ? 'Locked' : `Level ${achievement.level}`;
+        const countLabel = englishPlural(achievement.count, 'country') + ' visited';
+        const nextLevel = achievement.level ? achievement.level + 1 : 1;
+        const progressText = achievement.complete
+          ? 'Highest Traveler level reached'
+          : achievement.locked
+            ? '1 country to unlock Level 1'
+            : `${achievement.remaining} more ${englishPlural(achievement.remaining, 'country')} to reach Level ${nextLevel}`;
+
+        card.classList.toggle('locked', achievement.locked);
+        card.classList.toggle('complete', achievement.complete);
+        document.querySelector('#travelerLevel').textContent = levelText;
+        document.querySelector('#travelerDescription').textContent = achievement.locked
+          ? 'Complete your first trip to unlock Traveler. Wishlist, planned, and home countries do not count.'
+          : achievement.complete
+            ? 'You have reached the highest Traveler milestone. Only completed trips outside your home country count.'
+            : 'Traveler grows with completed trips to new countries. Wishlist, planned, and home countries do not count.';
+        document.querySelector('#travelerCount').textContent = achievement.count;
+        document.querySelector('#travelerCountLabel').textContent = countLabel;
+        document.querySelector('#travelerProgressText').textContent = progressText;
+        document.querySelector('#travelerProgressPercent').textContent = achievement.complete ? 'Complete' : `${achievement.progress}%`;
+        document.querySelector('#travelerProgressFill').style.width = `${achievement.progress}%`;
+
+        const progressTrack = document.querySelector('#travelerProgressTrack');
+        progressTrack.setAttribute('aria-valuemin', String(achievement.currentThreshold));
+        progressTrack.setAttribute('aria-valuemax', String(achievement.nextThreshold || 50));
+        progressTrack.setAttribute('aria-valuenow', String(Math.min(achievement.count, achievement.nextThreshold || 50)));
+        progressTrack.setAttribute('aria-valuetext', progressText);
+
+        document.querySelector('#travelerLevels').innerHTML = AchievementsUtils.thresholds.map((threshold, index) => {
+          const level = index + 1;
+          const unlocked = achievement.count >= threshold;
+          const current = achievement.level === level;
+          return `<div class="achievement-step${unlocked ? ' unlocked' : ''}${current ? ' current' : ''}" aria-label="Level ${level}: ${threshold} ${englishPlural(threshold, 'country')}${unlocked ? ', unlocked' : ', locked'}">
+            <span class="achievement-step-dot">${level}</span>
+            <strong>${threshold}</strong>
+          </div>`;
+        }).join('');
+      }
+
+      function openAchievements() {
+        renderAchievements();
+        achievementsDialog.showModal();
+      }
+
       function openShareCard(preferredPeriod = statisticsPeriod, { includeWishlist = false } = {}) {
         if (timelinePlaying) pauseTimeline();
         document.querySelector('#shareWishlist').checked = includeWishlist;
@@ -2842,10 +2988,13 @@
         updateUi();
       });
       document.querySelector('#openStatistics').addEventListener('click', () => openStatisticsView());
+      document.querySelector('#openAchievements').addEventListener('click', openAchievements);
       document.querySelector('#openShareCardMain').addEventListener('click', () => openShareCard('all', { includeWishlist: showWishlistOnly }));
       document.querySelector('#backToMap').addEventListener('click', () => returnToMap());
       document.querySelector('#statisticsStartMap').addEventListener('click', () => returnToMap(() => document.querySelector('#search').focus()));
       document.querySelector('#openShareCard').addEventListener('click', () => openShareCard(statisticsPeriod));
+      document.querySelector('#closeAchievementsDialog').addEventListener('click', () => achievementsDialog.close());
+      achievementsDialog.addEventListener('click', event => { if (event.target === achievementsDialog) achievementsDialog.close(); });
       document.querySelector('#closeShareDialog').addEventListener('click', () => shareDialog.close());
       document.querySelector('#cancelShareCard').addEventListener('click', () => shareDialog.close());
       shareDialog.addEventListener('click', event => { if (event.target === shareDialog) shareDialog.close(); });
