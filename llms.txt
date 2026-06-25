@@ -70,9 +70,9 @@ Transcontinental countries count toward every applicable continent by default. U
 
 ## Share cards
 
-The application generates a 1200 by 630 pixel travel card locally in the browser. The user can select an all-time or yearly period, choose light or dark styling, and enter an optional custom headline.
+The application generates a 1200 by 630 pixel travel card locally in the browser. The user can select an all-time or yearly period, choose light or dark styling, enter an optional custom headline, and optionally include wishlist countries. Opening the card from the wishlist view enables wishlist inclusion automatically.
 
-The card can be downloaded as a PNG or shared through the device's native sharing interface when supported. It contains the map and high-level totals but never includes personal trip notes or detailed trip dates.
+All-time cards can show the full wishlist. Year-specific cards show wishlist countries only when they have a planned trip assigned to that year. The card can be downloaded as a PNG or shared through the device's native sharing interface when supported. It contains the map and high-level completed-travel totals but never includes personal trip notes or detailed trip dates.
 
 ## Local storage and backups
 
@@ -103,7 +103,7 @@ The synchronized state includes trips, notes, wishlist entries, home country, an
 - Anonymous travel data remains in the current browser
 - Signed-in travel data is stored in Cloud Firestore and an account-specific browser cache
 - Firestore security rules prevent signed-in users from reading or modifying another user's travel document
-- Share cards are generated locally and exclude notes and detailed dates
+- Share cards are generated locally, can optionally include period-eligible wishlist countries, and exclude notes and detailed dates
 - Google authentication is used only after the user explicitly chooses to sign in
 
 The cloud data is not end-to-end encrypted. This application should not be described as storing signed-in data only on the user's device.

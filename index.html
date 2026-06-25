@@ -64,6 +64,7 @@
     document.documentElement.dataset.theme = localStorage.getItem('travel-atlas-theme') || 'light';
   </script>
   <script src="./d3.min.js"></script>
+  <script src="./share-card-utils.js"></script>
   <style>
     :root {
       --ink: #17221f;
@@ -780,11 +781,16 @@
     .statistics-empty { padding: 22px 8px; color: var(--muted); font-size: 11px; text-align: center; }
 
     #shareDialog { width: min(900px, calc(100% - 28px)); }
-    .share-controls { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(130px, .7fr) minmax(130px, .7fr); gap: 9px; margin-bottom: 14px; }
+    .share-controls { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(120px, .7fr) minmax(120px, .7fr) auto; gap: 9px; margin-bottom: 14px; }
     .share-field { min-width: 0; }
     .share-field .field-label { display: block; margin-bottom: 6px; }
     .share-field input, .share-field select { width: 100%; height: 39px; padding: 0 11px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: rgba(255,255,255,.62); font-size: 11px; outline: none; }
     .share-field input:focus, .share-field select:focus { border-color: var(--visited); box-shadow: 0 0 0 3px color-mix(in srgb, var(--visited) 14%, transparent); }
+    .share-toggle { position: relative; min-height: 39px; align-self: end; display: flex; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 11px; color: var(--muted); background: rgba(255,255,255,.62); font-size: 11px; cursor: pointer; user-select: none; }
+    .share-toggle input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .share-toggle input:checked + .toggle-track { background: var(--wishlist); }
+    .share-toggle input:checked + .toggle-track::after { transform: translateX(11px); }
+    .share-toggle input:focus-visible + .toggle-track { outline: 2px solid var(--accent); outline-offset: 2px; }
     .share-preview { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--map-area); box-shadow: 0 14px 34px rgba(23,34,31,.10); }
     .share-preview canvas { width: 100%; height: auto; display: block; aspect-ratio: 40 / 21; }
     .share-privacy { display: flex; align-items: center; gap: 7px; margin: 11px 2px 0; color: var(--muted); font-size: 10px; }
@@ -875,6 +881,7 @@
     html[data-theme="dark"] .empty-list-action { background: rgba(255,255,255,.05); }
     html[data-theme="dark"] .share-field input,
     html[data-theme="dark"] .share-field select { color-scheme: dark; color: var(--ink); background: #252a33; }
+    html[data-theme="dark"] .share-toggle { border-color: rgba(255,255,255,.08); background: #252a33; }
 
     body, .sidebar, .map-shell, dialog, .stat, .home-button, .search, .soft-button,
     .map-title, .legend, .marker-toggle, .map-control, .date-mode-button, .date-picker-body,
@@ -1204,6 +1211,7 @@
         <label class="share-field"><span class="field-label">Headline</span><input id="shareTitle" type="text" maxlength="48" autocomplete="off"></label>
         <label class="share-field"><span class="field-label">Period</span><select id="sharePeriod"><option value="all">All time</option></select></label>
         <label class="share-field"><span class="field-label">Style</span><select id="shareTheme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
+        <label class="share-toggle"><input id="shareWishlist" type="checkbox"><span class="toggle-track" aria-hidden="true"></span><span>Include wishlist</span></label>
       </div>
       <div class="share-preview"><canvas id="shareCanvas" width="1200" height="630" aria-label="Share card preview"></canvas></div>
       <p class="share-privacy">
@@ -2298,6 +2306,36 @@
         context.fillText(text, x, y);
       }
 
+      function sharePlannedVisitsByCountry() {
+        return Object.fromEntries(
+          Object.keys(state.countries)
+            .map(countryId => [countryId, plannedVisitsFor(countryId)])
+            .filter(([, visits]) => visits.length)
+        );
+      }
+
+      function shareWishlistCountryIds(period) {
+        return ShareCardUtils.wishlistCountryIdsForPeriod({
+          period,
+          wishlistIds: wishlistIds(),
+          plannedVisitsByCountry: sharePlannedVisitsByCountry(),
+          homeCountryId: state.homeCountryId
+        });
+      }
+
+      function renderSharePeriodOptions(preferredPeriod = 'all') {
+        const periodSelect = document.querySelector('#sharePeriod');
+        const years = ShareCardUtils.shareCardYears({
+          completedTripDates: completedTripRecords().map(trip => trip.date),
+          plannedVisitsByCountry: sharePlannedVisitsByCountry(),
+          includeWishlist: document.querySelector('#shareWishlist').checked
+        });
+        const period = years.includes(preferredPeriod) ? preferredPeriod : 'all';
+        periodSelect.innerHTML = `<option value="all">All time</option>${years.map(year => `<option value="${year}">${year}</option>`).join('')}`;
+        periodSelect.value = period;
+        return period;
+      }
+
       function renderShareCard() {
         const canvas = document.querySelector('#shareCanvas');
         const context = canvas.getContext('2d');
@@ -2306,14 +2344,15 @@
         const trips = statisticTripsFor(period);
         const visitedIds = [...new Set(trips.map(trip => trip.countryId))];
         const tripCounts = new Map(visitedIds.map(id => [id, trips.filter(trip => trip.countryId === id).length]));
+        const wishlist = new Set(document.querySelector('#shareWishlist').checked ? shareWishlistCountryIds(period) : []);
         const continents = new Set(visitedIds.flatMap(continentsFor));
         const title = document.querySelector('#shareTitle').value.trim() || defaultShareTitle(period);
         const palette = dark ? {
           background: '#111318', card: '#191d24', ink: '#f4f5f7', muted: '#a7afba',
-          sea: '#202b37', land: '#363c47', border: '#626d7b', visited: '#50b9b9', visitedDeep: '#226d89', accent: '#f07859'
+          sea: '#202b37', land: '#363c47', border: '#626d7b', visited: '#50b9b9', visitedDeep: '#226d89', wishlist: '#858ce0', accent: '#f07859'
         } : {
           background: '#f3f0e8', card: '#fbfaf6', ink: '#17221f', muted: '#68726e',
-          sea: '#bfd7da', land: '#ddd9cf', border: '#a8b2ac', visited: '#2f9385', visitedDeep: '#0d504b', accent: '#ef6a4c'
+          sea: '#bfd7da', land: '#ddd9cf', border: '#a8b2ac', visited: '#2f9385', visitedDeep: '#0d504b', wishlist: '#6f76c8', accent: '#ef6a4c'
         };
 
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -2368,6 +2407,7 @@
           context.beginPath();
           mapPath(feature);
           if (count) context.fillStyle = count >= 5 ? palette.visitedDeep : palette.visited;
+          else if (wishlist.has(feature.id)) context.fillStyle = palette.wishlist;
           else context.fillStyle = palette.land;
           context.fill();
           context.strokeStyle = palette.border;
@@ -2377,12 +2417,13 @@
 
         markerPlaces.forEach(place => {
           const count = tripCounts.get(place.id) || 0;
-          if (!count) return;
+          const wished = wishlist.has(place.id);
+          if (!count && !wished) return;
           const point = mapProjection(place.geometry.coordinates);
           if (!point) return;
           context.beginPath();
           context.arc(point[0], point[1], 3.4, 0, Math.PI * 2);
-          context.fillStyle = palette.visited;
+          context.fillStyle = count ? palette.visited : palette.wishlist;
           context.fill();
           context.strokeStyle = palette.card;
           context.lineWidth = 1.4;
@@ -2414,15 +2455,12 @@
         return new File([bytes], 'my-world-map.png', { type: 'image/png' });
       }
 
-      function openShareCard(preferredPeriod = statisticsPeriod) {
+      function openShareCard(preferredPeriod = statisticsPeriod, { includeWishlist = false } = {}) {
         if (timelinePlaying) pauseTimeline();
-        const years = [...new Set(completedTripRecords().map(trip => trip.date?.slice(0, 4)).filter(Boolean))].sort((a, b) => b.localeCompare(a));
-        const period = years.includes(preferredPeriod) ? preferredPeriod : 'all';
-        const periodSelect = document.querySelector('#sharePeriod');
-        periodSelect.innerHTML = `<option value="all">All time</option>${years.map(year => `<option value="${year}">${year}</option>`).join('')}`;
-        periodSelect.value = period;
-        document.querySelector('#shareTheme').value = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+        document.querySelector('#shareWishlist').checked = includeWishlist;
         shareTitleCustomized = false;
+        const period = renderSharePeriodOptions(preferredPeriod);
+        document.querySelector('#shareTheme').value = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
         document.querySelector('#shareTitle').value = defaultShareTitle(period);
         renderShareCard();
         const shareButton = document.querySelector('#shareShareCard');
@@ -2804,7 +2842,7 @@
         updateUi();
       });
       document.querySelector('#openStatistics').addEventListener('click', () => openStatisticsView());
-      document.querySelector('#openShareCardMain').addEventListener('click', () => openShareCard('all'));
+      document.querySelector('#openShareCardMain').addEventListener('click', () => openShareCard('all', { includeWishlist: showWishlistOnly }));
       document.querySelector('#backToMap').addEventListener('click', () => returnToMap());
       document.querySelector('#statisticsStartMap').addEventListener('click', () => returnToMap(() => document.querySelector('#search').focus()));
       document.querySelector('#openShareCard').addEventListener('click', () => openShareCard(statisticsPeriod));
@@ -2820,6 +2858,11 @@
         renderShareCard();
       });
       document.querySelector('#shareTheme').addEventListener('change', renderShareCard);
+      document.querySelector('#shareWishlist').addEventListener('change', () => {
+        const period = renderSharePeriodOptions(document.querySelector('#sharePeriod').value);
+        if (!shareTitleCustomized) document.querySelector('#shareTitle').value = defaultShareTitle(period);
+        renderShareCard();
+      });
       document.querySelector('#downloadShareCard').addEventListener('click', () => {
         const period = document.querySelector('#sharePeriod').value;
         const link = document.createElement('a');

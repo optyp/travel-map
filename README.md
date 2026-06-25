@@ -56,9 +56,9 @@ Statistics can be viewed for all time or filtered to a specific year. Transconti
 
 ## Share cards
 
-The app can generate a polished 1200 × 630 travel card directly in the browser. Users can choose a period, light or dark styling, and a custom headline before downloading the result as a PNG or sharing it through supported devices.
+The app can generate a polished 1200 × 630 travel card directly in the browser. Users can choose a period, light or dark styling, a custom headline, and whether to include wishlist countries before downloading the result as a PNG or sharing it through supported devices. Wishlist inclusion is enabled automatically when the card is opened from the wishlist view.
 
-Share cards include the map and high-level totals. Personal notes and detailed trip dates are never included.
+All-time cards can show the full wishlist. Year-specific cards show wishlist countries only when they have a planned trip assigned to that year. Share cards include the map and high-level completed-travel totals; personal notes and detailed trip dates are never included.
 
 ## Saving and sync
 
